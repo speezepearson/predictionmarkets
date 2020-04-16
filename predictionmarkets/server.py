@@ -62,13 +62,16 @@ class Server:
     async def post_create_market(self, request: web.BaseRequest) -> web.StreamResponse:
         id = MarketId(random_words(4))
         post_data = await request.post()
-        market = CfarMarket(
-            name=str(post_data["name"]),
-            proposition=str(post_data["proposition"]),
-            floor=Probability(ln_odds=float(str(post_data["floor"]))),
-            ceiling=Probability(ln_odds=float(str(post_data["ceiling"]))),
-            state=Probability(ln_odds=float(str(post_data["state"]))),
-        )
+        try:
+            market = CfarMarket(
+                name=str(post_data["name"]),
+                proposition=str(post_data["proposition"]),
+                floor=Probability(ln_odds=float(str(post_data["floor"]))),
+                ceiling=Probability(ln_odds=float(str(post_data["ceiling"]))),
+                state=Probability(ln_odds=float(str(post_data["state"]))),
+            )
+        except (KeyError, ValueError) as e:
+            return web.Response(status=400, body=str(e))
         self.markets[id] = market
         return web.Response(
             status=200,
