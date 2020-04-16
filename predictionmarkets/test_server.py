@@ -28,7 +28,7 @@ async def test_create(client):
         })
     assert resp.status == 200
     body = await resp.text()
-    id = re.search(r"/market/([a-z-]+)", body).group(1)
+    [id] = {m.group(1) for m in re.finditer(r"/market/([a-z-]+)", body)}
 
     resp = await client.get(f"/market/{id}")
     body = await resp.text()
