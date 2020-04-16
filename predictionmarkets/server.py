@@ -55,8 +55,14 @@ class Server:
             content_type="text/html",
         )
 
-    async def post_create_market(self, request: web.BaseRequest) -> web.StreamResponse:
+    def register_market(self, market: CfarMarket) -> MarketId:
         id = MarketId(random_words(4))
+        while id in self.markets:
+            id = MarketId(random_words(4))
+        self.markets[id] = market
+        return id
+
+    async def post_create_market(self, request: web.BaseRequest) -> web.StreamResponse:
         post_data = await request.post()
         try:
             market = CfarMarket(
@@ -68,7 +74,8 @@ class Server:
             )
         except (KeyError, ValueError) as e:
             return web.Response(status=400, body=str(e))
-        self.markets[id] = market
+
+        id = self.register_market(market)
         return web.Response(
             status=200,
             body=pystache.render(
