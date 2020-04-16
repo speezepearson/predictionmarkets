@@ -1,16 +1,26 @@
 import argparse
 import dataclasses
+import math
+from pathlib import Path
 import typing as t
 from aiohttp import web
+
+import pystache  # type: ignore
 
 from predictionmarkets.util import random_words
 
 MarketId = t.NewType("MarketId", str)
 
+TEMPLATE_DIR = Path(__file__).parent / "templates"
+
 
 @dataclasses.dataclass
 class Probability:
-    log_odds: float
+    ln_odds: float
+
+    def __float__(self):
+        odds = math.exp(self.ln_odds)
+        return odds/(odds+1)
 
 
 @dataclasses.dataclass
@@ -23,7 +33,10 @@ class CfarMarket:
 
 
 def render_market(market: CfarMarket) -> str:
-    return str(market)
+    return pystache.render(
+        template=(TEMPLATE_DIR/'market.mustache.html').read_text(),
+        context=dataclasses.asdict(market),
+    )
 
 
 class Server:
@@ -42,25 +55,16 @@ class Server:
     async def get_index(self, request: web.BaseRequest) -> web.StreamResponse:
         return web.Response(
             status=200,
-            body="""
-                <ul>{}</ul>
-                <h1>New Market</h1>
-                <form action="/create-market" method="post">
-                    <div>Name: <input type="text" name="name"></div>
-                    <div>Proposition: <input type="text" name="proposition"></div>
-                    <div>Floor: <input type="text" name="floor"></div>
-                    <div>Ceiling: <input type="text" name="ceiling"></div>
-                    <div>State: <input type="text" name="state"></div>
-                    <div><input type="submit" value="Submit"></div>
-                </form>
-            """.format(
-                "".join(
-                    f'<li><a href="{id}">{market.name}</a></li>'
-                    for id, market in self.markets.items()
-                ),
-
+            body=pystache.render(
+                template=(TEMPLATE_DIR/"index.mustache.html").read_text(),
+                context={
+                    "markets": [
+                        {"id": id, **dataclasses.asdict(market)}
+                        for id, market in self.markets.items()
+                    ],
+                },
             ),
-            content_type='text/html',
+            content_type="text/html",
         )
 
     async def create_market(self, request: web.BaseRequest) -> web.StreamResponse:
@@ -69,9 +73,9 @@ class Server:
         market = CfarMarket(
             name=str(post_data["name"]),
             proposition=str(post_data["proposition"]),
-            floor=Probability(log_odds=float(str(post_data["floor"]))),
-            ceiling=Probability(log_odds=float(str(post_data["ceiling"]))),
-            state=Probability(log_odds=float(str(post_data["state"]))),
+            floor=Probability(ln_odds=float(str(post_data["floor"]))),
+            ceiling=Probability(ln_odds=float(str(post_data["ceiling"]))),
+            state=Probability(ln_odds=float(str(post_data["state"]))),
         )
         self.markets[id] = market
         return web.Response(
