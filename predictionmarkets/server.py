@@ -13,14 +13,10 @@ from .util import random_words
 MarketId = t.NewType("MarketId", str)
 
 TEMPLATE_DIR = Path(__file__).parent / "templates"
-
-
-
-def render_market(market: CfarMarket) -> str:
-    return pystache.render(
-        template=(TEMPLATE_DIR/'market.mustache.html').read_text(),
-        context=dataclasses.asdict(market),
-    )
+INDEX_PAGE_TEMPLATE = TEMPLATE_DIR / "index.mustache.html"
+MARKET_PAGE_TEMPLATE = TEMPLATE_DIR / "market.mustache.html"
+POST_CREATE_MARKET_PAGE_TEMPLATE = TEMPLATE_DIR / "post-create-market.mustache.html"
+CREATE_MARKET_PAGE_TEMPLATE = TEMPLATE_DIR / "create-market.mustache.html"
 
 
 class Server:
@@ -41,7 +37,7 @@ class Server:
         return web.Response(
             status=200,
             body=pystache.render(
-                template=(TEMPLATE_DIR/"index.mustache.html").read_text(),
+                template=INDEX_PAGE_TEMPLATE.read_text(),
                 context={
                     "public_markets": [
                         {"id": id, **dataclasses.asdict(market)}
@@ -55,7 +51,7 @@ class Server:
     async def get_create_market(self, request: web.BaseRequest) -> web.StreamResponse:
         return web.Response(
             status=200,
-            body=(TEMPLATE_DIR/"create-market.mustache.html").read_text(),
+            body=CREATE_MARKET_PAGE_TEMPLATE.read_text(),
             content_type="text/html",
         )
 
@@ -76,7 +72,7 @@ class Server:
         return web.Response(
             status=200,
             body=pystache.render(
-                template=(TEMPLATE_DIR/'post-create-market.mustache.html').read_text(),
+                template=POST_CREATE_MARKET_PAGE_TEMPLATE.read_text(),
                 context={"id": id},
             ),
             content_type="text/html",
@@ -89,7 +85,10 @@ class Server:
             return web.Response(status=404)
         return web.Response(
             status=200,
-            body=render_market(market),
+            body=pystache.render(
+                template=MARKET_PAGE_TEMPLATE.read_text(),
+                context=dataclasses.asdict(market),
+            ),
             content_type="text/html",
         )
 
