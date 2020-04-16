@@ -7,29 +7,13 @@ from aiohttp import web
 
 import pystache  # type: ignore
 
-from predictionmarkets.util import random_words
+from . import Probability, CfarMarket
+from .util import random_words
 
 MarketId = t.NewType("MarketId", str)
 
 TEMPLATE_DIR = Path(__file__).parent / "templates"
 
-
-@dataclasses.dataclass
-class Probability:
-    ln_odds: float
-
-    def __float__(self):
-        odds = math.exp(self.ln_odds)
-        return odds/(odds+1)
-
-
-@dataclasses.dataclass
-class CfarMarket:
-    name: str
-    proposition: str
-    floor: Probability
-    ceiling: Probability
-    state: Probability
 
 
 def render_market(market: CfarMarket) -> str:
@@ -80,7 +64,10 @@ class Server:
         self.markets[id] = market
         return web.Response(
             status=200,
-            body=render_market(market),
+            body=pystache.render(
+                template=(TEMPLATE_DIR/'post-create-market.mustache.html').read_text(),
+                context={"id": id},
+            ),
             content_type="text/html",
         )
 
