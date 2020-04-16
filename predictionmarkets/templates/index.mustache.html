@@ -1,19 +1,13 @@
 <html>
 <body>
 
-<ul>{{#markets}}
-    <li><a href="{{id}}">{{name}}</a></li>
-{{/markets}}</ul>
+<a href="/create-market">Create market</a>
 
-<h1>New Market</h1>
-<form action="/create-market" method="post">
-    <div>Name: <input type="text" name="name"></div>
-    <div>Proposition: <input type="text" name="proposition"></div>
-    <div>Floor: <input type="text" name="floor"></div>
-    <div>Ceiling: <input type="text" name="ceiling"></div>
-    <div>State: <input type="text" name="state"></div>
-    <div><input type="submit" value="Submit"></div>
-</form>
+<h1>Public, no-skin-in-the-game markets</h1>
+
+<ul>{{#public_markets}}
+    <li><a href="{{id}}">{{name}}</a></li>
+{{/public_markets}}</ul>
 
 </body>
 </html>

@@ -30,7 +30,8 @@ class Server:
     def routes(self) -> t.Iterable[web.RouteDef]:
         return [
             web.RouteDef(method="GET", path="/", handler=self.get_index, kwargs={}),
-            web.RouteDef(method="POST", path="/create-market", handler=self.create_market, kwargs={}),
+            web.RouteDef(method="GET", path="/create-market", handler=self.get_create_market, kwargs={}),
+            web.RouteDef(method="POST", path="/create-market", handler=self.post_create_market, kwargs={}),
             web.RouteDef(
                 method="GET", path="/market/{id}", handler=self.get_market, kwargs={}
             ),
@@ -42,7 +43,7 @@ class Server:
             body=pystache.render(
                 template=(TEMPLATE_DIR/"index.mustache.html").read_text(),
                 context={
-                    "markets": [
+                    "public_markets": [
                         {"id": id, **dataclasses.asdict(market)}
                         for id, market in self.markets.items()
                     ],
@@ -51,7 +52,14 @@ class Server:
             content_type="text/html",
         )
 
-    async def create_market(self, request: web.BaseRequest) -> web.StreamResponse:
+    async def get_create_market(self, request: web.BaseRequest) -> web.StreamResponse:
+        return web.Response(
+            status=200,
+            body=(TEMPLATE_DIR/"create-market.mustache.html").read_text(),
+            content_type="text/html",
+        )
+
+    async def post_create_market(self, request: web.BaseRequest) -> web.StreamResponse:
         id = MarketId(random_words(4))
         post_data = await request.post()
         market = CfarMarket(
