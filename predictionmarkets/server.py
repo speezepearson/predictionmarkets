@@ -2,6 +2,7 @@ import argparse
 import dataclasses
 import math
 from pathlib import Path
+import random
 import typing as t
 from aiohttp import web
 
@@ -20,7 +21,8 @@ CREATE_MARKET_PAGE_TEMPLATE = TEMPLATE_DIR / "create-market.mustache.html"
 
 
 class Server:
-    def __init__(self) -> None:
+    def __init__(self, rng: t.Optional[random.Random] = None) -> None:
+        self.rng = rng
         self.markets: t.Dict[MarketId, CfarMarket] = {}
 
     def routes(self) -> t.Iterable[web.RouteDef]:
@@ -55,9 +57,9 @@ class Server:
         )
 
     def register_market(self, market: CfarMarket) -> MarketId:
-        id = MarketId(random_words(4))
+        id = MarketId(random_words(4, rng=self.rng))
         while id in self.markets:
-            id = MarketId(random_words(4))
+            id = MarketId(random_words(4, rng=self.rng))
         self.markets[id] = market
         return id
 
@@ -122,11 +124,16 @@ class Server:
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--port", type=int, default=8080)
 parser.add_argument("-H", "--host", default="localhost")
+parser.add_argument("--random-seed", type=int, default=None)
 
 if __name__ == "__main__":
     args = parser.parse_args()
 
+    rng = random.Random()
+    if args.random_seed is not None:
+        rng.seed(args.random_seed)
+
     app = web.Application()
-    app.add_routes(Server().routes())
+    app.add_routes(Server(rng=rng).routes())
 
     web.run_app(app, host=args.host, port=args.port)
