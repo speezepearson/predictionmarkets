@@ -24,9 +24,9 @@ class MarketResources:
         return self.market.url_for(id=id)
 
 class Server:
-    def __init__(self, marketplace: Marketplace, router: web.UrlDispatcher) -> None:
+    def __init__(self, marketplace: Marketplace, resources: MarketResources) -> None:
         self.marketplace = marketplace
-        self.resources = MarketResources(router)
+        self.resources = resources
         self.jinja_env = jinja2.Environment(
             loader=jinja2.PackageLoader("predictionmarkets", "templates"),
             autoescape=jinja2.select_autoescape(["html", "xml"]),
@@ -118,6 +118,6 @@ if __name__ == "__main__":
     marketplace = Marketplace(rng=rng)
 
     app = web.Application()
-    Server(marketplace, app.router).add_handlers()
+    Server(marketplace, MarketResources(app.router)).add_handlers()
 
     web.run_app(app, host=args.host, port=args.port)

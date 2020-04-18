@@ -8,12 +8,12 @@ import bs4  # type: ignore
 import pytest  # type: ignore
 
 from predictionmarkets import Marketplace
-from predictionmarkets.server import Server
+from predictionmarkets.server import Server, MarketResources
 
 @pytest.fixture
 async def client(aiohttp_client):
     app = web.Application()
-    Server(Marketplace(), app.router).add_handlers()
+    Server(Marketplace(), MarketResources(app.router)).add_handlers()
     yield await aiohttp_client(app)
 
 async def check_links(client: ClientSession, html: str) -> str:
