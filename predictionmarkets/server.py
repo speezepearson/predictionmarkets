@@ -8,10 +8,8 @@ from aiohttp import web
 
 import pystache  # type: ignore
 
-from . import Probability, CfarMarket
-from . import words
+from . import Probability, CfarMarket, Marketplace, MarketId
 
-MarketId = t.NewType("MarketId", str)
 
 TEMPLATE_DIR = Path(__file__).parent / "templates"
 INDEX_PAGE_TEMPLATE = TEMPLATE_DIR / "index.mustache.html"
@@ -21,9 +19,8 @@ CREATE_MARKET_PAGE_TEMPLATE = TEMPLATE_DIR / "create-market.mustache.html"
 
 
 class Server:
-    def __init__(self, rng: t.Optional[random.Random] = None) -> None:
-        self.insec_rng = rng if (rng is not None) else random.Random()
-        self.markets: t.Dict[MarketId, CfarMarket] = {}
+    def __init__(self, marketplace: Marketplace) -> None:
+        self.marketplace = marketplace
 
     def routes(self) -> t.Iterable[web.RouteDef]:
         return [
@@ -42,7 +39,7 @@ class Server:
                 context={
                     "public_markets": [
                         {"id": id, **dataclasses.asdict(market)}
-                        for id, market in self.markets.items()
+                        for id, market in self.marketplace.markets.items()
                     ],
                 },
             ),
@@ -55,13 +52,6 @@ class Server:
             body=CREATE_MARKET_PAGE_TEMPLATE.read_text(),
             content_type="text/html",
         )
-
-    def register_market(self, market: CfarMarket) -> MarketId:
-        id = MarketId('-'.join(words.random_words(4, rng=self.insec_rng)))
-        while id in self.markets:
-            id = MarketId('-'.join(words.random_words(4, rng=self.insec_rng)))
-        self.markets[id] = market
-        return id
 
     async def post_create_market(self, request: web.BaseRequest) -> web.StreamResponse:
         post_data = await request.post()
@@ -76,7 +66,7 @@ class Server:
         except (KeyError, ValueError) as e:
             return web.HTTPBadRequest(reason=str(e))
 
-        id = self.register_market(market)
+        id = self.marketplace.register_market(market)
         return web.Response(
             status=200,
             body=pystache.render(
@@ -88,7 +78,7 @@ class Server:
 
     async def get_market(self, request: web.Request) -> web.StreamResponse:
         id = MarketId(str(request.match_info["id"]))
-        market = self.markets.get(id)
+        market = self.marketplace.markets.get(id)
         if market is None:
             return web.Response(status=404)
         return web.Response(
@@ -102,7 +92,7 @@ class Server:
 
     async def update_market(self, request: web.Request) -> web.StreamResponse:
         id = MarketId(str(request.match_info["id"]))
-        market = self.markets.get(id)
+        market = self.marketplace.markets.get(id)
         if market is None:
             return web.Response(status=404)
 
@@ -132,8 +122,9 @@ if __name__ == "__main__":
     rng = random.Random()
     if args.random_seed is not None:
         rng.seed(args.random_seed)
+    marketplace = Marketplace(rng=rng)
 
     app = web.Application()
-    app.add_routes(Server(rng=rng).routes())
+    app.add_routes(Server(marketplace).routes())
 
     web.run_app(app, host=args.host, port=args.port)

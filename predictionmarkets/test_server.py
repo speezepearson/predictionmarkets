@@ -6,11 +6,12 @@ from aiohttp import web
 
 import pytest  # type: ignore
 
+from predictionmarkets import Marketplace
 from predictionmarkets.server import Server
 
 @pytest.fixture
 async def client(aiohttp_client):
-    server = Server()
+    server = Server(Marketplace())
     app = web.Application()
     app.add_routes(server.routes())
     yield await aiohttp_client(app)
