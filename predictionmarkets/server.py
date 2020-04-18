@@ -29,6 +29,7 @@ class Server:
             web.RouteDef(method="GET", path="/create-market", handler=self.get_create_market, kwargs={}),
             web.RouteDef(method="POST", path="/create-market", handler=self.post_create_market, kwargs={}),
             web.RouteDef(method="GET", path="/market/{id}", handler=self.get_market, kwargs={}),
+            web.RouteDef(method="POST", path="/market/{id}/update", handler=self.update_market, kwargs={}),
         ]
 
     async def get_index(self, request: web.BaseRequest) -> web.StreamResponse:
@@ -71,7 +72,7 @@ class Server:
                 state=Probability(ln_odds=float(str(post_data["state"]))),
             )
         except (KeyError, ValueError) as e:
-            return web.Response(status=400, body=str(e))
+            return web.HTTPBadRequest(reason=str(e))
 
         id = self.register_market(market)
         return web.Response(
@@ -92,7 +93,27 @@ class Server:
             status=200,
             body=pystache.render(
                 template=MARKET_PAGE_TEMPLATE.read_text(),
-                context=dataclasses.asdict(market),
+                context={"id": id, **dataclasses.asdict(market)},
+            ),
+            content_type="text/html",
+        )
+
+    async def update_market(self, request: web.Request) -> web.StreamResponse:
+        id = MarketId(str(request.match_info["id"]))
+        market = self.markets.get(id)
+        if market is None:
+            return web.Response(status=404)
+
+        try:
+            state = Probability(ln_odds=float(str((await request.post())["state"])))
+        except (KeyError, ValueError) as e:
+            return web.HTTPBadRequest(reason=str(e))
+        market.state = state
+        return web.Response(
+            status=200,
+            body=pystache.render(
+                template=REDIRECT_TO_MARKET_PAGE_TEMPLATE.read_text(),
+                context={"id": id, "text": "Market updated!"},
             ),
             content_type="text/html",
         )
