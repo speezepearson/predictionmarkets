@@ -6,17 +6,14 @@ import random
 import typing as t
 from aiohttp import web
 
-import pystache  # type: ignore
-
 from . import Probability, CfarMarket, Marketplace, MarketId
 
+import jinja2
 
-TEMPLATE_DIR = Path(__file__).parent / "templates"
-INDEX_PAGE_TEMPLATE = TEMPLATE_DIR / "index.mustache.html"
-MARKET_PAGE_TEMPLATE = TEMPLATE_DIR / "market.mustache.html"
-REDIRECT_TO_MARKET_PAGE_TEMPLATE = TEMPLATE_DIR / "redirect-to-market.mustache.html"
-CREATE_MARKET_PAGE_TEMPLATE = TEMPLATE_DIR / "create-market.mustache.html"
-
+jinja_env = jinja2.Environment(
+    loader=jinja2.PackageLoader('predictionmarkets', 'templates'),
+    autoescape=jinja2.select_autoescape(['html', 'xml'])
+)
 
 class Server:
     def __init__(self, marketplace: Marketplace) -> None:
@@ -34,22 +31,14 @@ class Server:
     async def get_index(self, request: web.BaseRequest) -> web.StreamResponse:
         return web.Response(
             status=200,
-            body=pystache.render(
-                template=INDEX_PAGE_TEMPLATE.read_text(),
-                context={
-                    "public_markets": [
-                        {"id": id, **dataclasses.asdict(market)}
-                        for id, market in self.marketplace.markets.items()
-                    ],
-                },
-            ),
+            body=jinja_env.get_template("index.jinja.html").render(public_markets=self.marketplace.markets),
             content_type="text/html",
         )
 
     async def get_create_market(self, request: web.BaseRequest) -> web.StreamResponse:
         return web.Response(
             status=200,
-            body=CREATE_MARKET_PAGE_TEMPLATE.read_text(),
+            body=jinja_env.get_template("create-market.jinja.html").render(),
             content_type="text/html",
         )
 
@@ -69,10 +58,7 @@ class Server:
         id = self.marketplace.register_market(market)
         return web.Response(
             status=200,
-            body=pystache.render(
-                template=REDIRECT_TO_MARKET_PAGE_TEMPLATE.read_text(),
-                context={"id": id, "text": "Market created!"},
-            ),
+            body=jinja_env.get_template("redirect.jinja.html").render(text="Market created!", dest=f"/market/{id}"),
             content_type="text/html",
         )
 
@@ -83,10 +69,7 @@ class Server:
             return web.Response(status=404)
         return web.Response(
             status=200,
-            body=pystache.render(
-                template=MARKET_PAGE_TEMPLATE.read_text(),
-                context={"id": id, **dataclasses.asdict(market)},
-            ),
+            body=jinja_env.get_template('view-market.jinja.html').render(id=id, market=market),
             content_type="text/html",
         )
 
@@ -103,10 +86,7 @@ class Server:
         market.state = state
         return web.Response(
             status=200,
-            body=pystache.render(
-                template=REDIRECT_TO_MARKET_PAGE_TEMPLATE.read_text(),
-                context={"id": id, "text": "Market updated!"},
-            ),
+            body=jinja_env.get_template("redirect.jinja.html").render(text="Market updated!", dest=f"/market/{id}"),
             content_type="text/html",
         )
 

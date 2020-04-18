@@ -8,9 +8,9 @@
 
 <h1>Public, no-skin-in-the-game markets</h1>
 
-<ul>{{#public_markets}}
-    <li><a href="/market/{{id}}">{{name}}</a></li>
-{{/public_markets}}</ul>
+<ul>{% for id, market in public_markets.items() %}
+    <li><a href="/market/{{id}}">{{market.name}}</a></li>
+{% endfor %}</ul>
 
 </body>
 </html>
