@@ -3,7 +3,8 @@ import functools
 import re
 
 from aiohttp import web
-
+from aiohttp.client import ClientSession
+import bs4  # type: ignore
 import pytest  # type: ignore
 
 from predictionmarkets import Marketplace
@@ -16,6 +17,12 @@ async def client(aiohttp_client):
     app.add_routes(server.routes())
     yield await aiohttp_client(app)
 
+async def check_links(client: ClientSession, html: str) -> str:
+    soup = bs4.BeautifulSoup(html, "html.parser")
+    for tag in soup.select("[href]"):
+        assert (await client.get(tag["href"])).status == 200
+
+    return html
 
 async def test_create(client):
     resp = await client.post(
@@ -28,11 +35,11 @@ async def test_create(client):
             "state": 3,
         })
     assert resp.status == 200
-    body = await resp.text()
+    body = await check_links(client, await resp.text())
     [id] = {m.group(1) for m in re.finditer(r"/market/([a-z-]+)", body)}
 
     resp = await client.get(f"/market/{id}")
-    body = await resp.text()
+    body = await check_links(client, await resp.text())
     assert "MyName" in body
     assert "MyProposition" in body
 
@@ -47,7 +54,8 @@ async def test_created_market_appears_on_index(client):
             "state": 3,
         })
     assert resp.status == 200
+    await check_links(client, await resp.text())
 
     resp = await client.get("/")
-    body = await resp.text()
+    body = await check_links(client, await resp.text())
     assert "MyName" in body
