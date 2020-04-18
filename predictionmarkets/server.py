@@ -28,9 +28,7 @@ class Server:
             web.RouteDef(method="GET", path="/", handler=self.get_index, kwargs={}),
             web.RouteDef(method="GET", path="/create-market", handler=self.get_create_market, kwargs={}),
             web.RouteDef(method="POST", path="/create-market", handler=self.post_create_market, kwargs={}),
-            web.RouteDef(
-                method="GET", path="/market/{id}", handler=self.get_market, kwargs={}
-            ),
+            web.RouteDef(method="GET", path="/market/{id}", handler=self.get_market, kwargs={}),
         ]
 
     async def get_index(self, request: web.BaseRequest) -> web.StreamResponse:
