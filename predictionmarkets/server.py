@@ -15,7 +15,7 @@ MarketId = t.NewType("MarketId", str)
 TEMPLATE_DIR = Path(__file__).parent / "templates"
 INDEX_PAGE_TEMPLATE = TEMPLATE_DIR / "index.mustache.html"
 MARKET_PAGE_TEMPLATE = TEMPLATE_DIR / "market.mustache.html"
-POST_CREATE_MARKET_PAGE_TEMPLATE = TEMPLATE_DIR / "post-create-market.mustache.html"
+REDIRECT_TO_MARKET_PAGE_TEMPLATE = TEMPLATE_DIR / "redirect-to-market.mustache.html"
 CREATE_MARKET_PAGE_TEMPLATE = TEMPLATE_DIR / "create-market.mustache.html"
 
 
@@ -77,8 +77,8 @@ class Server:
         return web.Response(
             status=200,
             body=pystache.render(
-                template=POST_CREATE_MARKET_PAGE_TEMPLATE.read_text(),
-                context={"id": id},
+                template=REDIRECT_TO_MARKET_PAGE_TEMPLATE.read_text(),
+                context={"id": id, "text": "Market created!"},
             ),
             content_type="text/html",
         )
