@@ -12,9 +12,8 @@ from predictionmarkets.server import Server
 
 @pytest.fixture
 async def client(aiohttp_client):
-    server = Server(Marketplace())
     app = web.Application()
-    app.add_routes(server.routes())
+    Server(Marketplace(), app.router).add_handlers()
     yield await aiohttp_client(app)
 
 async def check_links(client: ClientSession, html: str) -> str:

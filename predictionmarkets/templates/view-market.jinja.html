@@ -12,7 +12,7 @@
 <p>Current state: {{market.state.ln_odds}}</p>
 
 <p>Set state?</p>
-<form action="{{id}}/update" method="post">
+<form action="{{resources.market_path(id)}}" method="post">
     <div>New state: <input type="number" min="{{market.floor.ln_odds}}" value="{{market.state.ln_odds}}" max="{{market.ceiling.ln_odds}}" step="any" name="state" /></div>
     <div><input type="submit" value="Bet!" /></div>
 </form>

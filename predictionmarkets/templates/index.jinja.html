@@ -4,12 +4,12 @@
 </head>
 <body>
 
-<a href="/create-market">Create market</a>
+<a href="{{resources.create_market_path()}}">Create market</a>
 
 <h1>Public, no-skin-in-the-game markets</h1>
 
 <ul>{% for id, market in public_markets.items() %}
-    <li><a href="/market/{{id}}">{{market.name}}</a></li>
+    <li><a href="{{resources.market_path(id)}}">{{market.name}}</a></li>
 {% endfor %}</ul>
 
 </body>

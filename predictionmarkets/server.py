@@ -10,35 +10,48 @@ from . import Probability, CfarMarket, Marketplace, MarketId
 
 import jinja2
 
-jinja_env = jinja2.Environment(
-    loader=jinja2.PackageLoader('predictionmarkets', 'templates'),
-    autoescape=jinja2.select_autoescape(['html', 'xml'])
-)
+class MarketResources:
+    def __init__(self, router: web.UrlDispatcher) -> None:
+        self.index = router.add_resource(name="index", path="/")
+        self.market = router.add_resource(name="market", path="/market/{id}")
+        self.create_market = router.add_resource(name="create_market", path="/create-market")
+
+    def index_path(self):
+        return self.index.url_for()
+    def create_market_path(self):
+        return self.create_market.url_for()
+    def market_path(self, id: MarketId):
+        return self.market.url_for(id=id)
 
 class Server:
-    def __init__(self, marketplace: Marketplace) -> None:
+    def __init__(self, marketplace: Marketplace, router: web.UrlDispatcher) -> None:
         self.marketplace = marketplace
+        self.resources = MarketResources(router)
+        self.jinja_env = jinja2.Environment(
+            loader=jinja2.PackageLoader("predictionmarkets", "templates"),
+            autoescape=jinja2.select_autoescape(["html", "xml"]),
+        )
+        self.jinja_env.globals["resources"] = self.resources
 
-    def routes(self) -> t.Iterable[web.RouteDef]:
-        return [
-            web.RouteDef(method="GET", path="/", handler=self.get_index, kwargs={}),
-            web.RouteDef(method="GET", path="/create-market", handler=self.get_create_market, kwargs={}),
-            web.RouteDef(method="POST", path="/create-market", handler=self.post_create_market, kwargs={}),
-            web.RouteDef(method="GET", path="/market/{id}", handler=self.get_market, kwargs={}),
-            web.RouteDef(method="POST", path="/market/{id}/update", handler=self.update_market, kwargs={}),
-        ]
+    def add_handlers(self):
+        self.resources.index.add_route("GET", self.get_index)
+        self.resources.create_market.add_route(method="GET", handler=self.get_create_market)
+        self.resources.create_market.add_route(method="POST", handler=self.post_create_market)
+        self.resources.market.add_route(method="GET", handler=self.get_market),
+        self.resources.market.add_route(method="POST", handler=self.update_market),
+
 
     async def get_index(self, request: web.BaseRequest) -> web.StreamResponse:
         return web.Response(
             status=200,
-            body=jinja_env.get_template("index.jinja.html").render(public_markets=self.marketplace.markets),
+            body=self.jinja_env.get_template("index.jinja.html").render(public_markets=self.marketplace.markets),
             content_type="text/html",
         )
 
     async def get_create_market(self, request: web.BaseRequest) -> web.StreamResponse:
         return web.Response(
             status=200,
-            body=jinja_env.get_template("create-market.jinja.html").render(),
+            body=self.jinja_env.get_template("create-market.jinja.html").render(),
             content_type="text/html",
         )
 
@@ -58,7 +71,7 @@ class Server:
         id = self.marketplace.register_market(market)
         return web.Response(
             status=200,
-            body=jinja_env.get_template("redirect.jinja.html").render(text="Market created!", dest=f"/market/{id}"),
+            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Market created!", dest=self.resources.market_path(id=id)),
             content_type="text/html",
         )
 
@@ -66,10 +79,10 @@ class Server:
         id = MarketId(str(request.match_info["id"]))
         market = self.marketplace.markets.get(id)
         if market is None:
-            return web.Response(status=404)
+            return web.HTTPNotFound()
         return web.Response(
             status=200,
-            body=jinja_env.get_template('view-market.jinja.html').render(id=id, market=market),
+            body=self.jinja_env.get_template('view-market.jinja.html').render(id=id, market=market),
             content_type="text/html",
         )
 
@@ -77,7 +90,7 @@ class Server:
         id = MarketId(str(request.match_info["id"]))
         market = self.marketplace.markets.get(id)
         if market is None:
-            return web.Response(status=404)
+            return web.HTTPNotFound()
 
         try:
             state = Probability(ln_odds=float(str((await request.post())["state"])))
@@ -86,7 +99,7 @@ class Server:
         market.state = state
         return web.Response(
             status=200,
-            body=jinja_env.get_template("redirect.jinja.html").render(text="Market updated!", dest=f"/market/{id}"),
+            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Market updated!", dest=self.resources.market_path(id=id)),
             content_type="text/html",
         )
 
@@ -105,6 +118,6 @@ if __name__ == "__main__":
     marketplace = Marketplace(rng=rng)
 
     app = web.Application()
-    app.add_routes(Server(marketplace).routes())
+    Server(marketplace, app.router).add_handlers()
 
     web.run_app(app, host=args.host, port=args.port)
