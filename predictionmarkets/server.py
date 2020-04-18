@@ -9,7 +9,7 @@ from aiohttp import web
 import pystache  # type: ignore
 
 from . import Probability, CfarMarket
-from .util import random_words
+from . import words
 
 MarketId = t.NewType("MarketId", str)
 
@@ -22,7 +22,7 @@ CREATE_MARKET_PAGE_TEMPLATE = TEMPLATE_DIR / "create-market.mustache.html"
 
 class Server:
     def __init__(self, rng: t.Optional[random.Random] = None) -> None:
-        self.rng = rng
+        self.insec_rng = rng if (rng is not None) else random.Random()
         self.markets: t.Dict[MarketId, CfarMarket] = {}
 
     def routes(self) -> t.Iterable[web.RouteDef]:
@@ -57,9 +57,9 @@ class Server:
         )
 
     def register_market(self, market: CfarMarket) -> MarketId:
-        id = MarketId(random_words(4, rng=self.rng))
+        id = MarketId('-'.join(words.random_words(4, rng=self.insec_rng)))
         while id in self.markets:
-            id = MarketId(random_words(4, rng=self.rng))
+            id = MarketId('-'.join(words.random_words(4, rng=self.insec_rng)))
         self.markets[id] = market
         return id
 
