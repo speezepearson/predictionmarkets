@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import dataclasses
 import math
@@ -12,6 +14,22 @@ from . import Probability, CfarMarket, Marketplace, MarketId
 from .auth import EntityId
 
 import jinja2
+
+class Session:
+    _ENTITY_ID_KEY = "entity_id"
+
+    def __init__(self, aio_session: aiohttp_session.Session) -> None:
+        self._aio_session = aio_session
+
+    @property
+    def entity_id(self) -> t.Optional[EntityId]:
+        s = self._aio_session.get(Session._ENTITY_ID_KEY)
+        if s is None:
+            return None
+        return EntityId(s)
+    @entity_id.setter
+    def entity_id(self, value: EntityId) -> None:
+        self._aio_session[Session._ENTITY_ID_KEY] = value
 
 class MarketResources:
     def __init__(self, router: web.UrlDispatcher) -> None:
@@ -49,12 +67,12 @@ class Server:
 
 
     async def get_index(self, request: web.BaseRequest) -> web.StreamResponse:
-        session = await aiohttp_session.get_session(request)
+        session = Session(await aiohttp_session.get_session(request))
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("index.jinja.html").render(
                 public_markets=self.marketplace.markets,
-                logged_in_user=session.get("username"),
+                logged_in_user=session.entity_id,
             ),
             content_type="text/html",
         )
@@ -91,13 +109,13 @@ class Server:
         market = self.marketplace.markets.get(id)
         if market is None:
             return web.HTTPNotFound()
-        session = await aiohttp_session.get_session(request)
+        session = Session(await aiohttp_session.get_session(request))
         return web.Response(
             status=200,
             body=self.jinja_env.get_template('view-market.jinja.html').render(
                 id=id,
                 market=market,
-                logged_in_user=session.get("username"),
+                logged_in_user=session.entity_id,
             ),
             content_type="text/html",
         )
@@ -108,15 +126,16 @@ class Server:
         if market is None:
             return web.HTTPNotFound()
 
-        session = await aiohttp_session.get_session(request)
-        entity_id = EntityId(session["username"])
+        session = Session(await aiohttp_session.get_session(request))
+        if session.entity_id is None:
+            return web.HTTPUnauthorized(reason="You gotta log in!")
 
         post_data = await request.post()
         try:
             state = Probability(ln_odds=float(str(post_data["state"])))
         except (KeyError, ValueError) as e:
             return web.HTTPBadRequest(reason=str(e))
-        market.set_state(participant=entity_id, new_state=state)
+        market.set_state(participant=session.entity_id, new_state=state)
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("redirect.jinja.html").render(text="Market updated!", dest=self.resources.market_path(id=market_id)),
@@ -125,9 +144,14 @@ class Server:
 
     async def post_login(self, request: web.Request) -> web.StreamResponse:
         # TODO: actual auth
+        session = Session(await aiohttp_session.get_session(request))
+
         post_data = await request.post()
-        session = await aiohttp_session.get_session(request)
-        session["username"] = str(post_data["username"]) # TODO: handle KeyError
+        try:
+            session.entity_id = EntityId(str(post_data["username"]))
+        except KeyError:
+            return web.HTTPBadRequest(reason="'username' is required")
+
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("redirect.jinja.html").render(text="Logged in!", dest=self.resources.index_path()),
