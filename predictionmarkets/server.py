@@ -7,6 +7,7 @@ import typing as t
 from aiohttp import web
 
 from . import Probability, CfarMarket, Marketplace, MarketId
+from .auth import EntityId
 
 import jinja2
 
@@ -87,19 +88,21 @@ class Server:
         )
 
     async def update_market(self, request: web.Request) -> web.StreamResponse:
-        id = MarketId(str(request.match_info["id"]))
-        market = self.marketplace.markets.get(id)
+        market_id = MarketId(str(request.match_info["id"]))
+        market = self.marketplace.markets.get(market_id)
         if market is None:
             return web.HTTPNotFound()
 
+        post_data = await request.post()
         try:
-            state = Probability(ln_odds=float(str((await request.post())["state"])))
+            entity_id = EntityId(str(post_data["entity_id"]))
+            state = Probability(ln_odds=float(str(post_data["state"])))
         except (KeyError, ValueError) as e:
             return web.HTTPBadRequest(reason=str(e))
-        market.state = state
+        market.set_state(participant=entity_id, new_state=state)
         return web.Response(
             status=200,
-            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Market updated!", dest=self.resources.market_path(id=id)),
+            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Market updated!", dest=self.resources.market_path(id=market_id)),
             content_type="text/html",
         )
 

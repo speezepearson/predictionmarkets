@@ -9,7 +9,6 @@ Todo:
 
 - MVP:
 
-    - let users interact with markets
     - persistence
     - store and display market history
     - add authentication

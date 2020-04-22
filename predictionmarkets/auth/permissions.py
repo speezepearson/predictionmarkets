@@ -1,7 +1,9 @@
 from __future__ import annotations
 import dataclasses
 import typing as t
-from .entity import Entity, EntityId
+
+from . import EntityId
+from .entity import Entity
 
 
 @dataclasses.dataclass
@@ -13,7 +15,7 @@ class PermissionStore:
     def __init__(self):
         self.permissions_by_entity: t.MutableMapping[Entity, t.MutableSet[Permission]] = {}
 
-    def get_permissions(self, entity: Entity) -> AbstractSet[Permission]:
+    def get_permissions(self, entity: Entity) -> t.AbstractSet[Permission]:
         return self.permissions_by_entity.get(entity, set())
 
     def add_permission(self, entity: Entity, permission: Permission) -> None:

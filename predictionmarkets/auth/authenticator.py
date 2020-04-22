@@ -1,8 +1,9 @@
 from __future__ import annotations
-import bcrypt
 import hashlib
 import dataclasses
 import typing as t
+
+import bcrypt  # type: ignore
 
 @dataclasses.dataclass(frozen=True)
 class AuthVerdict:
