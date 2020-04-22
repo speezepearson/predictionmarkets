@@ -23,12 +23,15 @@
     </table>
 </details>
 
+{% if logged_in_user %}
 <p>Set state?</p>
 <form action="{{resources.market_path(id)}}" method="post">
     <div>New state: <input type="number" min="{{market.floor.ln_odds}}" value="{{market.state.ln_odds}}" max="{{market.ceiling.ln_odds}}" step="any" name="state" /></div>
-    <div>(Your entity-id: <input type="text" name="entity_id" />)</div>
     <div><input type="submit" value="Bet!" /></div>
 </form>
+{% else %}
+<p>(Log in to participate!)</p>
+{% endif %}
 
 </body>
 </html>

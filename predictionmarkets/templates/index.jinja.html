@@ -4,6 +4,15 @@
 </head>
 <body>
 
+{% if logged_in_user %}
+<p>(logged in as {{logged_in_user}})</p>
+{% else %}
+<form action="{{resources.login_path()}}" method="post">
+    <input placeholder="username" name="username" />
+    <input type="submit" value="Log in as user"/>
+</form>
+{% endif %}
+
 <a href="{{resources.create_market_path()}}">Create market</a>
 
 <h1>Public, no-skin-in-the-game markets</h1>

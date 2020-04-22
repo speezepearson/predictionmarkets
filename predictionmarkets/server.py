@@ -4,7 +4,9 @@ import math
 from pathlib import Path
 import random
 import typing as t
+
 from aiohttp import web
+import aiohttp_session  # type: ignore
 
 from . import Probability, CfarMarket, Marketplace, MarketId
 from .auth import EntityId
@@ -16,6 +18,7 @@ class MarketResources:
         self.index = router.add_resource(name="index", path="/")
         self.market = router.add_resource(name="market", path="/market/{id}")
         self.create_market = router.add_resource(name="create_market", path="/create-market")
+        self.login = router.add_resource(name="login", path="/login")
 
     def index_path(self):
         return self.index.url_for()
@@ -23,6 +26,8 @@ class MarketResources:
         return self.create_market.url_for()
     def market_path(self, id: MarketId):
         return self.market.url_for(id=id)
+    def login_path(self):
+        return self.login.url_for()
 
 class Server:
     def __init__(self, marketplace: Marketplace, resources: MarketResources) -> None:
@@ -39,13 +44,18 @@ class Server:
         self.resources.create_market.add_route(method="GET", handler=self.get_create_market)
         self.resources.create_market.add_route(method="POST", handler=self.post_create_market)
         self.resources.market.add_route(method="GET", handler=self.get_market),
-        self.resources.market.add_route(method="POST", handler=self.update_market),
+        self.resources.market.add_route(method="POST", handler=self.post_market),
+        self.resources.login.add_route(method="POST", handler=self.post_login),
 
 
     async def get_index(self, request: web.BaseRequest) -> web.StreamResponse:
+        session = await aiohttp_session.get_session(request)
         return web.Response(
             status=200,
-            body=self.jinja_env.get_template("index.jinja.html").render(public_markets=self.marketplace.markets),
+            body=self.jinja_env.get_template("index.jinja.html").render(
+                public_markets=self.marketplace.markets,
+                logged_in_user=session.get("username"),
+            ),
             content_type="text/html",
         )
 
@@ -81,21 +91,28 @@ class Server:
         market = self.marketplace.markets.get(id)
         if market is None:
             return web.HTTPNotFound()
+        session = await aiohttp_session.get_session(request)
         return web.Response(
             status=200,
-            body=self.jinja_env.get_template('view-market.jinja.html').render(id=id, market=market),
+            body=self.jinja_env.get_template('view-market.jinja.html').render(
+                id=id,
+                market=market,
+                logged_in_user=session.get("username"),
+            ),
             content_type="text/html",
         )
 
-    async def update_market(self, request: web.Request) -> web.StreamResponse:
+    async def post_market(self, request: web.Request) -> web.StreamResponse:
         market_id = MarketId(str(request.match_info["id"]))
         market = self.marketplace.markets.get(market_id)
         if market is None:
             return web.HTTPNotFound()
 
+        session = await aiohttp_session.get_session(request)
+        entity_id = EntityId(session["username"])
+
         post_data = await request.post()
         try:
-            entity_id = EntityId(str(post_data["entity_id"]))
             state = Probability(ln_odds=float(str(post_data["state"])))
         except (KeyError, ValueError) as e:
             return web.HTTPBadRequest(reason=str(e))
@@ -105,6 +122,18 @@ class Server:
             body=self.jinja_env.get_template("redirect.jinja.html").render(text="Market updated!", dest=self.resources.market_path(id=market_id)),
             content_type="text/html",
         )
+
+    async def post_login(self, request: web.Request) -> web.StreamResponse:
+        # TODO: actual auth
+        post_data = await request.post()
+        session = await aiohttp_session.get_session(request)
+        session["username"] = str(post_data["username"]) # TODO: handle KeyError
+        return web.Response(
+            status=200,
+            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Logged in!", dest=self.resources.index_path()),
+            content_type="text/html",
+        )
+
 
 
 parser = argparse.ArgumentParser()
@@ -121,6 +150,7 @@ if __name__ == "__main__":
     marketplace = Marketplace(rng=rng)
 
     app = web.Application()
+    aiohttp_session.setup(app, aiohttp_session.SimpleCookieStorage())
     Server(marketplace, MarketResources(app.router)).add_handlers()
 
     web.run_app(app, host=args.host, port=args.port)
