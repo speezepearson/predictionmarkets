@@ -1,0 +1,15 @@
+<div style="background: #cccccc; margin: 0 0 1em">
+
+{% if logged_in_user %}
+Logged in as {{logged_in_user}};
+<form action="{{resources.logout_path()}}" method="post" style="display: inline">
+    <input type="submit" value="Log out" />
+</form>
+{% else %}
+<form action="{{resources.login_path()}}" method="post">
+    <input placeholder="username" name="username" />
+    <input type="submit" value="Log in as user"/>
+</form>
+{% endif %}
+
+</div>

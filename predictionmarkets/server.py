@@ -28,8 +28,11 @@ class Session:
             return None
         return EntityId(s)
     @entity_id.setter
-    def entity_id(self, value: EntityId) -> None:
-        self._aio_session[Session._ENTITY_ID_KEY] = value
+    def entity_id(self, value: t.Optional[EntityId]) -> None:
+        if value is None:
+            del self._aio_session[Session._ENTITY_ID_KEY]
+        else:
+            self._aio_session[Session._ENTITY_ID_KEY] = value
 
 class MarketResources:
     def __init__(self, router: web.UrlDispatcher) -> None:
@@ -37,6 +40,7 @@ class MarketResources:
         self.market = router.add_resource(name="market", path="/market/{id}")
         self.create_market = router.add_resource(name="create_market", path="/create-market")
         self.login = router.add_resource(name="login", path="/login")
+        self.logout = router.add_resource(name="logout", path="/logout")
 
     def index_path(self):
         return self.index.url_for()
@@ -46,6 +50,8 @@ class MarketResources:
         return self.market.url_for(id=id)
     def login_path(self):
         return self.login.url_for()
+    def logout_path(self):
+        return self.logout.url_for()
 
 class Server:
     def __init__(self, marketplace: Marketplace, resources: MarketResources) -> None:
@@ -64,6 +70,7 @@ class Server:
         self.resources.market.add_route(method="GET", handler=self.get_market),
         self.resources.market.add_route(method="POST", handler=self.post_market),
         self.resources.login.add_route(method="POST", handler=self.post_login),
+        self.resources.logout.add_route(method="POST", handler=self.post_logout),
 
 
     async def get_index(self, request: web.BaseRequest) -> web.StreamResponse:
@@ -78,9 +85,12 @@ class Server:
         )
 
     async def get_create_market(self, request: web.BaseRequest) -> web.StreamResponse:
+        session = Session(await aiohttp_session.get_session(request))
         return web.Response(
             status=200,
-            body=self.jinja_env.get_template("create-market.jinja.html").render(),
+            body=self.jinja_env.get_template("create-market.jinja.html").render(
+                logged_in_user=session.entity_id,
+            ),
             content_type="text/html",
         )
 
@@ -155,6 +165,15 @@ class Server:
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("redirect.jinja.html").render(text="Logged in!", dest=self.resources.index_path()),
+            content_type="text/html",
+        )
+
+    async def post_logout(self, request: web.Request) -> web.StreamResponse:
+        session = Session(await aiohttp_session.get_session(request))
+        session.entity_id = None
+        return web.Response(
+            status=200,
+            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Logged out!", dest=self.resources.index_path()),
             content_type="text/html",
         )
 
