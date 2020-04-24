@@ -2,7 +2,7 @@ import dataclasses
 import math
 import typing as t
 
-from plauth import EntityId  # type: ignore
+from plauth import Entity  # type: ignore
 
 from .probabilities import Probability
 
@@ -18,9 +18,9 @@ class CfarMarket:
     floor: Probability
     ceiling: Probability
     state: Probability
-    stakes: t.MutableMapping[EntityId, Stakes] = dataclasses.field(default_factory=dict)
+    stakes: t.MutableMapping[Entity, Stakes] = dataclasses.field(default_factory=dict)
 
-    def set_state(self, participant: EntityId, new_state: Probability) -> None:
+    def set_state(self, participant: Entity, new_state: Probability) -> None:
         if not (self.floor <= new_state <= self.ceiling):
             raise ValueError(f"this market's state must be in range [{float(self.floor)}, {float(self.ceiling)}] (got {float(new_state)})")
         stakes = self.stakes.setdefault(participant, Stakes(0, 0))

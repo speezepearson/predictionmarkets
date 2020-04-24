@@ -9,11 +9,12 @@ import typing as t
 
 from aiohttp import web
 import aiohttp_session  # type: ignore
-from plauth import EntityId  # type: ignore
 
 from . import Probability, CfarMarket, Marketplace, MarketId
 
 import jinja2
+
+EntityId = t.NewType("EntityId", str)
 
 class Session:
     _ENTITY_ID_KEY = "entity_id"
