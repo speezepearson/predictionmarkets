@@ -56,7 +56,7 @@ class MarketResources:
         self.index = router.add_resource(name="index", path="/")
         self.market = router.add_resource(name="market", path="/market/{id}")
         self.create_market = router.add_resource(name="create_market", path="/create-market")
-        self.login = router.add_resource(name="login", path="/login")
+        self.user_login = router.add_resource(name="user_login", path="/user_login")
         self.logout = router.add_resource(name="logout", path="/logout")
         self.petname = router.add_resource(name="petname", path="/petname")
 
@@ -66,8 +66,8 @@ class MarketResources:
         return self.create_market.url_for()
     def market_path(self, id: MarketId):
         return self.market.url_for(id=id)
-    def login_path(self):
-        return self.login.url_for()
+    def user_login_path(self):
+        return self.user_login.url_for()
     def logout_path(self):
         return self.logout.url_for()
     def petname_path(self):
@@ -95,7 +95,7 @@ class Server:
         self.resources.create_market.add_route(method="POST", handler=self.post_create_market)
         self.resources.market.add_route(method="GET", handler=self.get_market),
         self.resources.market.add_route(method="POST", handler=self.post_market),
-        self.resources.login.add_route(method="POST", handler=self.post_login),
+        self.resources.user_login.add_route(method="POST", handler=self.post_user_login),
         self.resources.logout.add_route(method="POST", handler=self.post_logout),
         self.resources.petname.add_route(method="POST", handler=self.post_petname),
 
@@ -182,7 +182,7 @@ class Server:
             content_type="text/html",
         )
 
-    async def post_login(self, request: web.Request) -> web.StreamResponse:
+    async def post_user_login(self, request: web.Request) -> web.StreamResponse:
         # TODO: actual auth
         session = Session(await aiohttp_session.get_session(request))
 
