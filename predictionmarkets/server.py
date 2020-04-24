@@ -29,6 +29,7 @@ class Session:
 
     @property
     def entity_id(self) -> t.Optional[EntityId]:
+        # TODO: should use session.identity instead, and have a separate map to translate to entity-id
         s = self._aio_session.get(Session._ENTITY_ID_KEY)
         if s is None:
             return None
@@ -82,6 +83,7 @@ class Server:
         self.jinja_env = jinja2.Environment(
             loader=jinja2.PackageLoader("predictionmarkets", "templates"),
             autoescape=jinja2.select_autoescape(["html", "xml"]),
+            # TODO: undefined=StrictUndefined or something like that
         )
         self.bcrypt_entities: t.MutableMapping[EntityId, plauth.AnybodyWithThisBcryptInverse] = {}
         self.username_to_entity_id: t.MutableMapping[Username, EntityId] = collections.defaultdict(lambda: EntityId("-".join(random_words(4, rng=self.rng))))
@@ -156,7 +158,7 @@ class Server:
             body=self.jinja_env.get_template('view-market.jinja.html').render(
                 id=id,
                 market=market,
-                current_entity=session.entity_id,
+                current_entity=session.entity_id,  # TODO: these two arguments get passed in a lot; can we refactor them out?
                 current_path=request.path,
             ),
             content_type="text/html",
