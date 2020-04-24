@@ -1,6 +1,8 @@
 {% from "entity.jinja.html" import entity with context %}
 <div style="background: #cccccc; margin: 0 0 1em">
 
+<a href="{{resources.index_path()}}">Home</a>
+
 {% if current_entity %}
 Logged in as {{entity(current_entity)}};
 <form action="{{resources.logout_path()}}" method="post" style="display: inline">

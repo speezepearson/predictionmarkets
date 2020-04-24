@@ -1,19 +1,17 @@
 {% macro entity(id) -%}
-    {% if current_entity %}
+    <a href="{{resources.entity_path(id)}}">
         {% if petnames.get(current_entity, id) %}
             {{ petnames.get(current_entity, id) }}
         {% else %}
-            <details style="display: inline-block">
-                <summary> {{id}} </summary>
-                <form action="{{resources.petname_path()}}" method="post">
-                    <input type="text" placeholder="petname" name="petname" />
-                    <input type="hidden" name="entityId" value="{{id}}" />
-                    <input type="hidden" name="redirectTo" value="{{current_path}}" />
-                    <input type="submit" value="Add petname" />
-                </form>
-            </details>
+            {{ id }}
         {% endif %}
+    </a>
+{%- endmacro %}
+
+{% macro entity_text(id) -%}
+    {% if petnames.get(current_entity, id) %}
+        {{ petnames.get(current_entity, id) }}
     {% else %}
-        {{id}}
+        {{ id }}
     {% endif %}
 {%- endmacro %}

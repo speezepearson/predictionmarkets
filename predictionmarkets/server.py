@@ -45,10 +45,8 @@ class PetnameRegistry:
         self.viewer_viewed_to_name: t.MutableMapping[t.Tuple[EntityId, EntityId], Petname] = {}
 
     def add(self, viewer: EntityId, viewed: EntityId, name: Petname) -> None:
-        print(f"adding petname {viewer},{viewed} -> {name}")
         self.viewer_viewed_to_name[viewer, viewed] = name
     def get(self, viewer: EntityId, viewed: EntityId) -> t.Optional[Petname]:
-        print(f"getting petname for {viewer},{viewed} -> {self.viewer_viewed_to_name.get((viewer, viewed))}")
         return self.viewer_viewed_to_name.get((viewer, viewed))
 
 class MarketResources:
@@ -59,8 +57,9 @@ class MarketResources:
         self.user_login = router.add_resource(name="user_login", path="/user_login")
         self.logout = router.add_resource(name="logout", path="/logout")
         self.petname = router.add_resource(name="petname", path="/petname")
+        self.entity = router.add_resource(name="entity", path="/entity/{id}")
 
-    def index_path(self):
+    def index_path(self):  # TODO: return type annotation
         return self.index.url_for()
     def create_market_path(self):
         return self.create_market.url_for()
@@ -72,6 +71,8 @@ class MarketResources:
         return self.logout.url_for()
     def petname_path(self):
         return self.petname.url_for()
+    def entity_path(self, id: EntityId):
+        return self.entity.url_for(id=id)
 
 class Server:
     def __init__(self, marketplace: Marketplace, resources: MarketResources, rng: t.Optional[random.Random] = None) -> None:
@@ -98,6 +99,7 @@ class Server:
         self.resources.user_login.add_route(method="POST", handler=self.post_user_login),
         self.resources.logout.add_route(method="POST", handler=self.post_logout),
         self.resources.petname.add_route(method="POST", handler=self.post_petname),
+        self.resources.entity.add_route(method="GET", handler=self.get_entity),
 
 
     async def get_index(self, request: web.BaseRequest) -> web.StreamResponse:
@@ -241,6 +243,19 @@ class Server:
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("redirect.jinja.html").render(text="Added petname!", dest=redirect_to),
+            content_type="text/html",
+        )
+
+    async def get_entity(self, request: web.Request) -> web.StreamResponse:
+        session = Session(await aiohttp_session.get_session(request))
+        id = request.match_info["id"]
+        return web.Response(
+            status=200,
+            body=self.jinja_env.get_template("view-entity.jinja.html").render(
+                id=id,
+                current_entity=session.entity_id,
+                current_path=request.path,
+            ),
             content_type="text/html",
         )
 

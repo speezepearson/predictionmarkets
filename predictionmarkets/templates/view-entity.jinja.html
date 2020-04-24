@@ -1,0 +1,29 @@
+{% from "entity.jinja.html" import entity, entity_text with context %}
+
+<html>
+<head>
+    <title>Entity: {{entity_text(id)}}</title>
+</head>
+<body>
+{% include 'topbar.jinja.html' %}
+
+<h1>{{entity(id)}}</h1>
+{% if petnames.get(current_entity, id) %}
+    <p>a.k.a. {{id}}</p>
+{% endif %}
+
+{% if current_entity %}
+<div>
+    <form action="{{resources.petname_path()}}" method="post">
+        <input type="text" placeholder="petname" name="petname" />
+        <input type="hidden" name="entityId" value="{{id}}" />
+        <input type="hidden" name="redirectTo" value="{{current_path}}" />
+        <input type="submit" value="Add petname" />
+    </form>
+</div>
+{% else %}
+<p>(Log in to add a petname!)</p>
+{% endif %}
+
+</body>
+</html>
