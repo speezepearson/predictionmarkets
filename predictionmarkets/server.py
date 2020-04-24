@@ -19,6 +19,7 @@ import jinja2
 
 Username = t.NewType("Username", str)
 EntityId = t.NewType("EntityId", str)
+Petname = t.NewType("Petname", str)
 
 class Session:
     _ENTITY_ID_KEY = "entity_id"
@@ -39,6 +40,17 @@ class Session:
         else:
             self._aio_session[Session._ENTITY_ID_KEY] = value
 
+class PetnameRegistry:
+    def __init__(self):
+        self.viewer_viewed_to_name: t.MutableMapping[t.Tuple[EntityId, EntityId], Petname] = {}
+
+    def add(self, viewer: EntityId, viewed: EntityId, name: Petname) -> None:
+        print(f"adding petname {viewer},{viewed} -> {name}")
+        self.viewer_viewed_to_name[viewer, viewed] = name
+    def get(self, viewer: EntityId, viewed: EntityId) -> t.Optional[Petname]:
+        print(f"getting petname for {viewer},{viewed} -> {self.viewer_viewed_to_name.get((viewer, viewed))}")
+        return self.viewer_viewed_to_name.get((viewer, viewed))
+
 class MarketResources:
     def __init__(self, router: web.UrlDispatcher) -> None:
         self.index = router.add_resource(name="index", path="/")
@@ -46,6 +58,7 @@ class MarketResources:
         self.create_market = router.add_resource(name="create_market", path="/create-market")
         self.login = router.add_resource(name="login", path="/login")
         self.logout = router.add_resource(name="logout", path="/logout")
+        self.petname = router.add_resource(name="petname", path="/petname")
 
     def index_path(self):
         return self.index.url_for()
@@ -57,6 +70,8 @@ class MarketResources:
         return self.login.url_for()
     def logout_path(self):
         return self.logout.url_for()
+    def petname_path(self):
+        return self.petname.url_for()
 
 class Server:
     def __init__(self, marketplace: Marketplace, resources: MarketResources, rng: t.Optional[random.Random] = None) -> None:
@@ -67,9 +82,12 @@ class Server:
             loader=jinja2.PackageLoader("predictionmarkets", "templates"),
             autoescape=jinja2.select_autoescape(["html", "xml"]),
         )
-        self.jinja_env.globals["resources"] = self.resources
         self.bcrypt_entities: t.MutableMapping[EntityId, plauth.AnybodyWithThisBcryptInverse] = {}
         self.username_to_entity_id: t.MutableMapping[Username, EntityId] = collections.defaultdict(lambda: EntityId("-".join(random_words(4, rng=self.rng))))
+        self.petnames: PetnameRegistry = PetnameRegistry()
+
+        self.jinja_env.globals["resources"] = self.resources
+        self.jinja_env.globals["petnames"] = self.petnames
 
     def add_handlers(self):
         self.resources.index.add_route("GET", self.get_index)
@@ -79,6 +97,7 @@ class Server:
         self.resources.market.add_route(method="POST", handler=self.post_market),
         self.resources.login.add_route(method="POST", handler=self.post_login),
         self.resources.logout.add_route(method="POST", handler=self.post_logout),
+        self.resources.petname.add_route(method="POST", handler=self.post_petname),
 
 
     async def get_index(self, request: web.BaseRequest) -> web.StreamResponse:
@@ -87,7 +106,7 @@ class Server:
             status=200,
             body=self.jinja_env.get_template("index.jinja.html").render(
                 public_markets=self.marketplace.markets,
-                logged_in_user=session.entity_id,
+                current_entity=session.entity_id,
                 current_path=request.path,
             ),
             content_type="text/html",
@@ -98,7 +117,7 @@ class Server:
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("create-market.jinja.html").render(
-                logged_in_user=session.entity_id,
+                current_entity=session.entity_id,
                 current_path=request.path,
             ),
             content_type="text/html",
@@ -135,7 +154,7 @@ class Server:
             body=self.jinja_env.get_template('view-market.jinja.html').render(
                 id=id,
                 market=market,
-                logged_in_user=session.entity_id,
+                current_entity=session.entity_id,
                 current_path=request.path,
             ),
             content_type="text/html",
@@ -201,6 +220,27 @@ class Server:
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("redirect.jinja.html").render(text="Logged out!", dest=redirect_to),
+            content_type="text/html",
+        )
+
+    async def post_petname(self, request: web.Request) -> web.StreamResponse:
+        session = Session(await aiohttp_session.get_session(request))
+        if session.entity_id is None:
+            return web.HTTPUnauthorized()
+
+        post_data = await request.post()
+        try:
+            entity_id = EntityId(str(post_data["entityId"]))
+            petname = Petname(str(post_data["petname"]))
+            redirect_to = str(post_data["redirectTo"])
+        except KeyError as e:
+            return web.HTTPBadRequest(reason=str(e))
+
+        self.petnames.add(session.entity_id, entity_id, petname)
+
+        return web.Response(
+            status=200,
+            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Added petname!", dest=redirect_to),
             content_type="text/html",
         )
 

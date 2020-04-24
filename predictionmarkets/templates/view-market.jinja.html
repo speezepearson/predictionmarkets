@@ -1,3 +1,5 @@
+{% from "entity.jinja.html" import entity with context %}
+
 <html>
 <head>
     <title>Prediction Market: {{market.name}}</title>
@@ -18,13 +20,13 @@
         <tbody>
             <tr> <th>Entity</th> <th>Winnings if yes</th> <th>Winnings if no</th> </tr>
             {% for participant, stakes in market.stakes.items() %}
-            <tr> <td>{{participant}}</td> <td>{{stakes.if_resolves_yes}}</td> <td>{{stakes.if_resolves_no}}</td> </tr>
+            <tr> <td>{{entity(participant)}}</td> <td>{{stakes.if_resolves_yes}}</td> <td>{{stakes.if_resolves_no}}</td> </tr>
             {% endfor %}
         </tbody>
     </table>
 </details>
 
-{% if logged_in_user %}
+{% if current_entity %}
 <p>Set state?</p>
 <form action="{{resources.market_path(id)}}" method="post">
     <div>New state: <input type="number" min="{{market.floor.ln_odds}}" value="{{market.state.ln_odds}}" max="{{market.ceiling.ln_odds}}" step="any" name="state" /></div>

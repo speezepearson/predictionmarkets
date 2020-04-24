@@ -1,7 +1,8 @@
+{% from "entity.jinja.html" import entity with context %}
 <div style="background: #cccccc; margin: 0 0 1em">
 
-{% if logged_in_user %}
-Logged in as {{logged_in_user}};
+{% if current_entity %}
+Logged in as {{entity(current_entity)}};
 <form action="{{resources.logout_path()}}" method="post" style="display: inline">
     <input type="hidden" name="redirectTo" value="{{current_path}}" />
     <input type="submit" value="Log out" />
