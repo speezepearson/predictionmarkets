@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import collections
 import dataclasses
 import math
 from pathlib import Path
@@ -9,11 +10,14 @@ import typing as t
 
 from aiohttp import web
 import aiohttp_session  # type: ignore
+import plauth  # type: ignore
 
 from . import Probability, CfarMarket, Marketplace, MarketId
+from .words import random_words
 
 import jinja2
 
+Username = t.NewType("Username", str)
 EntityId = t.NewType("EntityId", str)
 
 class Session:
@@ -55,14 +59,17 @@ class MarketResources:
         return self.logout.url_for()
 
 class Server:
-    def __init__(self, marketplace: Marketplace, resources: MarketResources) -> None:
+    def __init__(self, marketplace: Marketplace, resources: MarketResources, rng: t.Optional[random.Random] = None) -> None:
         self.marketplace = marketplace
         self.resources = resources
+        self.rng = rng if (rng is not None) else random.Random()
         self.jinja_env = jinja2.Environment(
             loader=jinja2.PackageLoader("predictionmarkets", "templates"),
             autoescape=jinja2.select_autoescape(["html", "xml"]),
         )
         self.jinja_env.globals["resources"] = self.resources
+        self.bcrypt_entities: t.MutableMapping[EntityId, plauth.AnybodyWithThisBcryptInverse] = {}
+        self.username_to_entity_id: t.MutableMapping[Username, EntityId] = collections.defaultdict(lambda: EntityId("-".join(random_words(4, rng=self.rng))))
 
     def add_handlers(self):
         self.resources.index.add_route("GET", self.get_index)
@@ -162,16 +169,25 @@ class Server:
 
         post_data = await request.post()
         try:
-            session.entity_id = EntityId(str(post_data["username"]))
+            username = Username(str(post_data["username"]))
+            password = Username(str(post_data["password"]))
             redirect_to = str(post_data["redirectTo"])
         except KeyError as e:
             return web.HTTPBadRequest(reason=str(e))
 
-        return web.Response(
-            status=200,
-            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Logged in!", dest=redirect_to),
-            content_type="text/html",
-        )
+        entity_id = self.username_to_entity_id[username]
+        if entity_id not in self.bcrypt_entities:
+            self.bcrypt_entities[entity_id] = plauth.AnybodyWithThisBcryptInverse.from_password(password)
+
+        if self.bcrypt_entities[entity_id].check_password(password).accepted:
+            session.entity_id = entity_id
+            return web.Response(
+                status=200,
+                body=self.jinja_env.get_template("redirect.jinja.html").render(text="Logged in!", dest=redirect_to),
+                content_type="text/html",
+            )
+
+        return web.HTTPUnauthorized()
 
     async def post_logout(self, request: web.Request) -> web.StreamResponse:
         session = Session(await aiohttp_session.get_session(request))

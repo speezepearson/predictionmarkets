@@ -9,6 +9,7 @@ Logged in as {{logged_in_user}};
 {% else %}
 <form action="{{resources.login_path()}}" method="post">
     <input placeholder="username" name="username" />
+    <input placeholder="password" type="password" name="password" />
     <input type="hidden" name="redirectTo" value="{{current_path}}" />
     <input type="submit" value="Log in as user"/>
 </form>
