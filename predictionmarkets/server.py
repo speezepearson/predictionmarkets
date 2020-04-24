@@ -9,9 +9,9 @@ import typing as t
 
 from aiohttp import web
 import aiohttp_session  # type: ignore
+from plauth import EntityId  # type: ignore
 
 from . import Probability, CfarMarket, Marketplace, MarketId
-from .auth import EntityId
 
 import jinja2
 

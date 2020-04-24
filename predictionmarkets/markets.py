@@ -2,7 +2,8 @@ import dataclasses
 import math
 import typing as t
 
-from .auth import EntityId
+from plauth import EntityId  # type: ignore
+
 from .probabilities import Probability
 
 @dataclasses.dataclass(frozen=True)
