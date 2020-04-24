@@ -81,6 +81,7 @@ class Server:
             body=self.jinja_env.get_template("index.jinja.html").render(
                 public_markets=self.marketplace.markets,
                 logged_in_user=session.entity_id,
+                current_path=request.path,
             ),
             content_type="text/html",
         )
@@ -91,6 +92,7 @@ class Server:
             status=200,
             body=self.jinja_env.get_template("create-market.jinja.html").render(
                 logged_in_user=session.entity_id,
+                current_path=request.path,
             ),
             content_type="text/html",
         )
@@ -127,6 +129,7 @@ class Server:
                 id=id,
                 market=market,
                 logged_in_user=session.entity_id,
+                current_path=request.path,
             ),
             content_type="text/html",
         )
@@ -160,21 +163,28 @@ class Server:
         post_data = await request.post()
         try:
             session.entity_id = EntityId(str(post_data["username"]))
-        except KeyError:
-            return web.HTTPBadRequest(reason="'username' is required")
+            redirect_to = str(post_data["redirectTo"])
+        except KeyError as e:
+            return web.HTTPBadRequest(reason=str(e))
 
         return web.Response(
             status=200,
-            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Logged in!", dest=self.resources.index_path()),
+            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Logged in!", dest=redirect_to),
             content_type="text/html",
         )
 
     async def post_logout(self, request: web.Request) -> web.StreamResponse:
         session = Session(await aiohttp_session.get_session(request))
         session.entity_id = None
+        post_data = await request.post()
+        try:
+            redirect_to = str(post_data["redirectTo"])
+        except KeyError as e:
+            return web.HTTPBadRequest(reason=str(e))
+
         return web.Response(
             status=200,
-            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Logged out!", dest=self.resources.index_path()),
+            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Logged out!", dest=redirect_to),
             content_type="text/html",
         )
 
