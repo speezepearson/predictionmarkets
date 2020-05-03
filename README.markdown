@@ -10,8 +10,6 @@ Todo:
 - MVP:
 
     - persistence
-    - store and display market history
-    - add authentication
     - let market-creator limit per-participant exposure
     - display probabilities in better ways than log-odds (ideally, user choice)
     - input validation
