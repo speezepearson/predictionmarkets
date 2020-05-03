@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package predictionmarkets.protobuf;
+
+message Probability {
+    double ln_odds = 1;
+}
+
+message Stakes {
+    double winnings_if_yes = 1;
+    double winnings_if_no = 2;
+}
+
+message CfarMarket {
+    string name = 1;
+    string proposition = 2;
+    Probability floor = 3;
+    Probability ceiling = 4;
+    Probability state = 5;
+    map<string, Stakes> entity_stakes = 6;
+}
+
+message CreateMarketRequest {
+    string name = 1;
+    string proposition = 2;
+    Probability floor = 3;
+    Probability ceiling = 4;
+    Probability initial_state = 5;
+}
+
+message CreateMarketResponse {
+    string market_id = 1;
+}
+
+message GetMarketRequest {
+    string id = 1;
+}
+
+message GetMarketResponse {
+    oneof market {
+        CfarMarket cfar = 1;
+    }
+}
+
+message UpdateCfarMarketRequest {
+    string market_id = 1;
+    string participant_id = 2;
+    Probability new_state = 3;
+}
+
+message UpdateCfarMarketResponse {
+}
+
+service Marketplace {
+    rpc CreateMarket(CreateMarketRequest) returns (CreateMarketResponse) {}
+    rpc GetMarket(GetMarketRequest) returns (GetMarketResponse) {}
+    rpc UpdateCfarMarket(UpdateCfarMarketRequest) returns (UpdateCfarMarketResponse) {}
+}
+
+
+message UsernamePasswordLoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message UsernamePasswordLoginResponse {
+    string token = 1;
+}
+
+message GetEntityForTokenRequest {
+    string token = 1;
+}
+
+message GetEntityForTokenResponse {
+    string entity_id = 1;
+}
+
+message DeleteTokenRequest {
+    string token = 1;
+}
+
+message DeleteTokenResponse {
+}
+
+service Entity {
+    rpc UsernamePasswordLogin(UsernamePasswordLoginRequest) returns (UsernamePasswordLoginResponse) {}
+    rpc GetEntityForToken(GetEntityForTokenRequest) returns (GetEntityForTokenResponse) {}
+    rpc DeleteToken(DeleteTokenRequest) returns (DeleteTokenResponse) {}
+}

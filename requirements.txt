@@ -1,3 +1,5 @@
 aiohttp
 aiohttp_session
 jinja2
+protobuf
+grpcio

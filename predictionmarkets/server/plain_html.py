@@ -12,34 +12,35 @@ from aiohttp import web
 import aiohttp_session  # type: ignore
 import plauth  # type: ignore
 
+import .protobuf.service_pb2 as proto
 from . import Probability, CfarMarket, Marketplace, MarketId
 from .words import random_words
+from .api.markets import MarketplaceServer
+from .api.entity import EntityServer, Token
 
 import jinja2
 
-Username = t.NewType("Username", str)
-EntityId = t.NewType("EntityId", str)
 Petname = t.NewType("Petname", str)
 
 class Session:
-    _ENTITY_ID_KEY = "entity_id"
+    _TOKEN_KEY = "token"
 
     def __init__(self, aio_session: aiohttp_session.Session) -> None:
         self._aio_session = aio_session
 
     @property
-    def entity_id(self) -> t.Optional[EntityId]:
+    def token(self) -> t.Optional[Token]:
         # TODO: should use session.identity instead, and have a separate map to translate to entity-id
-        s = self._aio_session.get(Session._ENTITY_ID_KEY)
+        s = self._aio_session.get(Session._TOKEN_KEY)
         if s is None:
             return None
-        return EntityId(s)
-    @entity_id.setter
-    def entity_id(self, value: t.Optional[EntityId]) -> None:
+        return Token(s)
+    @token.setter
+    def token(self, value: t.Optional[Token]) -> None:
         if value is None:
-            del self._aio_session[Session._ENTITY_ID_KEY]
+            del self._aio_session[Session._TOKEN_KEY]
         else:
-            self._aio_session[Session._ENTITY_ID_KEY] = value
+            self._aio_session[Session._TOKEN_KEY] = value
 
 class PetnameRegistry:
     def __init__(self):
@@ -76,17 +77,20 @@ class MarketResources:
         return self.entity.url_for(id=id)
 
 class Server:
-    def __init__(self, marketplace: Marketplace, resources: MarketResources, rng: t.Optional[random.Random] = None) -> None:
-        self.marketplace = marketplace
+    def __init__(
+        self,
+        entity_service: proto.EntityServicer,
+        market_service: proto.MarketplaceServicer,
+        resources: MarketResources,
+    ) -> None:
+        self.entity_service = entity_service
+        self.market_service = market_service
         self.resources = resources
-        self.rng = rng if (rng is not None) else random.Random()
         self.jinja_env = jinja2.Environment(
             loader=jinja2.PackageLoader("predictionmarkets", "templates"),
             autoescape=jinja2.select_autoescape(["html", "xml"]),
             # TODO: undefined=StrictUndefined or something like that
         )
-        self.bcrypt_entities: t.MutableMapping[EntityId, plauth.AnybodyWithThisBcryptInverse] = {}
-        self.username_to_entity_id: t.MutableMapping[Username, EntityId] = collections.defaultdict(lambda: EntityId("-".join(random_words(4, rng=self.rng))))
         self.petnames: PetnameRegistry = PetnameRegistry()
 
         self.jinja_env.globals["resources"] = self.resources
@@ -103,133 +107,146 @@ class Server:
         self.resources.petname.add_route(method="POST", handler=self.post_petname),
         self.resources.entity.add_route(method="GET", handler=self.get_entity),
 
+    def _get_entity(session: Session) -> t.Optional[EntityId]:
+        response = self.entity_service.GetEntityForToken(
+            request=proto.GetEntityForTokenRequest(token=session.token),
+            context=None,
+        )  # TODO: error-handling
+        return response.entity_id
 
     async def get_index(self, request: web.BaseRequest) -> web.StreamResponse:
-        session = Session(await aiohttp_session.get_session(request))
+        current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("index.jinja.html").render(
                 public_markets=self.marketplace.markets,
-                current_entity=session.entity_id,
+                current_entity=current_entity,
                 current_path=request.path,
             ),
             content_type="text/html",
         )
 
     async def get_create_market(self, request: web.BaseRequest) -> web.StreamResponse:
-        session = Session(await aiohttp_session.get_session(request))
+        current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("create-market.jinja.html").render(
-                current_entity=session.entity_id,
+                current_entity=current_entity,
                 current_path=request.path,
             ),
             content_type="text/html",
         )
 
     async def post_create_market(self, request: web.BaseRequest) -> web.StreamResponse:
-        post_data = await request.post()
-        try:
-            market = CfarMarket(
+        current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
+        response = self.market_service.CreateMarket(
+            request=proto.CreateMarketRequest(
                 name=str(post_data["name"]),
                 proposition=str(post_data["proposition"]),
-                floor=Probability(ln_odds=float(str(post_data["floor"]))),
-                ceiling=Probability(ln_odds=float(str(post_data["ceiling"]))),
-                state=Probability(ln_odds=float(str(post_data["state"]))),
-            )
-        except (KeyError, ValueError) as e:
-            return web.HTTPBadRequest(reason=str(e))
-
-        id = self.marketplace.register_market(market)
+                floor=proto.Probability(ln_odds=float(str(post_data["floor"]))),
+                ceiling=proto.Probability(ln_odds=float(str(post_data["ceiling"]))),
+                state=proto.Probability(ln_odds=float(str(post_data["state"]))),
+            ),
+            context=None
+        )  # TODO: error-handling
         return web.Response(
             status=200,
-            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Market created!", dest=self.resources.market_path(id=id)),
+            body=self.jinja_env.get_template("redirect.jinja.html").render(
+                text="Market created!",
+                dest=self.resources.market_path(id=response.market_id),
+            ),
             content_type="text/html",
         )
 
     async def get_market(self, request: web.Request) -> web.StreamResponse:
-        id = MarketId(str(request.match_info["id"]))
-        market = self.marketplace.markets.get(id)
-        if market is None:
-            return web.HTTPNotFound()
-        session = Session(await aiohttp_session.get_session(request))
+        current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
+        response = self.market_service.GetMarket(
+            request=proto.GetMarketRequest(id=str(request.match_info["id"])),
+            context=None
+        )  # TODO: error-handling
         return web.Response(
             status=200,
             body=self.jinja_env.get_template('view-market.jinja.html').render(
                 id=id,
-                market=market,
-                current_entity=session.entity_id,  # TODO: these two arguments get passed in a lot; can we refactor them out?
+                market=response.cfar,  # TODO: deal with polymorphism
+                current_entity=current_entity,  # TODO: these two arguments get passed in a lot; can we refactor them out?
                 current_path=request.path,
             ),
             content_type="text/html",
         )
 
     async def post_market(self, request: web.Request) -> web.StreamResponse:
-        market_id = MarketId(str(request.match_info["id"]))
-        market = self.marketplace.markets.get(market_id)
-        if market is None:
-            return web.HTTPNotFound()
-
-        session = Session(await aiohttp_session.get_session(request))
-        if session.entity_id is None:
-            return web.HTTPUnauthorized(reason="You gotta log in!")
-
+        current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
         post_data = await request.post()
-        try:
-            state = Probability(ln_odds=float(str(post_data["state"])))
-        except (KeyError, ValueError) as e:
-            return web.HTTPBadRequest(reason=str(e))
-        market.set_state(participant=session.entity_id, new_state=state)
+        market_id = MarketId(str(request.match_info["id"]))
+        response = self.market_service.UpdateCfarMarket(
+            request=proto.UpdateCfarMarketRequest(
+                market_id=market_id,
+                entity_id=current_entity,
+                new_state=proto.Probability(ln_odds=str(post_data["state"])),
+            ),
+            context=None,
+        )  # TODO: error-handling
         return web.Response(
             status=200,
-            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Market updated!", dest=self.resources.market_path(id=market_id)),
+            body=self.jinja_env.get_template("redirect.jinja.html").render(
+                text="Market updated!",
+                dest=self.resources.market_path(id=market_id),
+            ),
             content_type="text/html",
         )
 
     async def post_user_login(self, request: web.Request) -> web.StreamResponse:
-        # TODO: actual auth
         session = Session(await aiohttp_session.get_session(request))
+        if session.token is not None:
+            raise NotImplementedError()  # TODO
 
         post_data = await request.post()
         try:
             username = Username(str(post_data["username"]))
-            password = Username(str(post_data["password"]))
+            password = str(post_data["password"])
             redirect_to = str(post_data["redirectTo"])
         except KeyError as e:
             return web.HTTPBadRequest(reason=str(e))
-
-        entity_id = self.username_to_entity_id[username]
-        if entity_id not in self.bcrypt_entities:
-            self.bcrypt_entities[entity_id] = plauth.AnybodyWithThisBcryptInverse.from_password(password)
-
-        if self.bcrypt_entities[entity_id].check_password(password).accepted:
-            session.entity_id = entity_id
-            return web.Response(
-                status=200,
-                body=self.jinja_env.get_template("redirect.jinja.html").render(text="Logged in!", dest=redirect_to),
-                content_type="text/html",
-            )
-
-        return web.HTTPUnauthorized()
-
-    async def post_logout(self, request: web.Request) -> web.StreamResponse:
-        session = Session(await aiohttp_session.get_session(request))
-        session.entity_id = None
-        post_data = await request.post()
-        try:
-            redirect_to = str(post_data["redirectTo"])
-        except KeyError as e:
-            return web.HTTPBadRequest(reason=str(e))
+        response = self.entity_service.UsernamePasswordLogin(
+            request=proto.UsernamePasswordLoginRequest(
+                username=username,
+                password=password,
+            ),
+            context=None,
+        )  # TODO: error-handling
+        session.token = response.token
 
         return web.Response(
             status=200,
-            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Logged out!", dest=redirect_to),
+            body=self.jinja_env.get_template("redirect.jinja.html").render(
+                text="Logged in!",
+                dest=redirect_to,
+            ),
+            content_type="text/html",
+        )
+
+    async def post_logout(self, request: web.Request) -> web.StreamResponse:
+        session = Session(await aiohttp_session.get_session(request))
+        response = self.entity_service.DeleteToken(
+            request=proto.DeleteTokenRequest(token=session.token),
+            context=None,
+        )  # TODO: error-handling
+
+        session.token = None
+
+        return web.Response(
+            status=200,
+            body=self.jinja_env.get_template("redirect.jinja.html").render(
+                text="Logged out!",
+                dest=redirect_to,
+            ),
             content_type="text/html",
         )
 
     async def post_petname(self, request: web.Request) -> web.StreamResponse:
-        session = Session(await aiohttp_session.get_session(request))
-        if session.entity_id is None:
+        current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
+        if current_entity is None:
             return web.HTTPUnauthorized()
 
         post_data = await request.post()
@@ -240,22 +257,25 @@ class Server:
         except KeyError as e:
             return web.HTTPBadRequest(reason=str(e))
 
-        self.petnames.add(session.entity_id, entity_id, petname)
+        self.petnames.add(current_entity, entity_id, petname)
 
         return web.Response(
             status=200,
-            body=self.jinja_env.get_template("redirect.jinja.html").render(text="Added petname!", dest=redirect_to),
+            body=self.jinja_env.get_template("redirect.jinja.html").render(
+                text="Added petname!",
+                dest=redirect_to,
+            ),
             content_type="text/html",
         )
 
     async def get_entity(self, request: web.Request) -> web.StreamResponse:
-        session = Session(await aiohttp_session.get_session(request))
+        current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
         id = request.match_info["id"]
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("view-entity.jinja.html").render(
                 id=id,
-                current_entity=session.entity_id,
+                current_entity=current_entity,
                 current_path=request.path,
             ),
             content_type="text/html",
