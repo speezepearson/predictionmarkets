@@ -5,22 +5,21 @@ import re
 from aiohttp import web
 from aiohttp.client import ClientSession
 import bs4  # type: ignore
-import grpc  # type: ignore
 import pytest  # type: ignore
 import aiohttp_session  # type: ignore
 
 from predictionmarkets import Marketplace
 from predictionmarkets.server.plain_html import Server, MarketResources
-from predictionmarkets.server.api.entity import EntityServer
-from predictionmarkets.server.api.marketplace import MarketplaceServer
+from predictionmarkets.server.api.entity import EntityService
+from predictionmarkets.server.api.marketplace import MarketplaceService
 
 @pytest.fixture
 async def client(aiohttp_client):
     app = web.Application()
     aiohttp_session.setup(app, aiohttp_session.SimpleCookieStorage())
     Server(
-        entity_service=EntityServer(),
-        market_service=MarketplaceServer(Marketplace()),
+        entity_service=EntityService(),
+        market_service=MarketplaceService(Marketplace()),
         resources=MarketResources(app.router),
     ).add_handlers()
     yield await aiohttp_client(app)

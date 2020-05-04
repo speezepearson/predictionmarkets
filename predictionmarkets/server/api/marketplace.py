@@ -1,54 +1,32 @@
 import json
 import typing as t
 
-import grpc  # type: ignore
+from .entity import EntityId
 
 from ...marketplace import Marketplace, MarketId
 from ...markets import CfarMarket
 from ...probabilities import Probability
 
-from .protobuf.service_pb2_grpc import MarketplaceServicer  # type: ignore
-from .protobuf import service_pb2 as proto  # type: ignore
-
-class MarketplaceServer(MarketplaceServicer):
+class MarketplaceService:
     def __init__(self, marketplace: Marketplace) -> None:
         self.marketplace = marketplace
 
-    def CreateMarket(self, request: proto.CreateMarketRequest, context: grpc.ServicerContext) -> proto.CreateMarketResponseOrError:
-        print('request', request, 'context', context)
+    def get_public_markets(self) -> t.Mapping[MarketId, CfarMarket]:
+        return self.marketplace.markets
+
+    def create_market(self, market: CfarMarket) -> MarketId:
         errors: t.MutableMapping[str, t.MutableSequence[str]] = {}
-        if not request.name: errors.setdefault("name", []).append("must be non-empty")
-        if not request.proposition: errors.setdefault("proposition", []).append("must be non-empty")
+        if not market.name: errors.setdefault("name", []).append("must be non-empty")
+        if not market.proposition: errors.setdefault("proposition", []).append("must be non-empty")
         if errors:
-            return grpc.Status(grpc.StatusCode.INVALID_ARGUMENT, json.dumps(errors))
-        self.marketplace.register_market(CfarMarket(
-            name=request.name,
-            proposition=request.proposition,
-            floor=Probability(ln_odds=request.floor.ln_odds),
-            ceiling=Probability(ln_odds=request.ceiling.ln_odds),
-            state=Probability(ln_odds=request.initial_state.ln_odds),
-        ))
-        return proto.CreateMarketResponseOrError(success=proto.CreateMarketResponse())
+            raise ValueError(errors)
+        return self.marketplace.register_market(market)
 
-    def GetMarket(self, request: proto.GetMarketRequest, context: grpc.ServicerContext) -> proto.GetMarketResponseOrError:
-        market = self.marketplace.markets.get(MarketId(request.id))
-        if market is None:
-            return grpc.Status(grpc.StatusCode.NOT_FOUND, "no such market")
-        return proto.GetMarketResponseOrError(success=proto.GetMarketResponse(cfar=proto.CfarMarket(
-            name=market.name,
-            proposition=market.proposition,
-            floor=proto.Probability(ln_odds=market.floor.ln_odds),
-            ceiling=proto.Probability(ln_odds=market.ceiling.ln_odds),
-            state=proto.Probability(ln_odds=market.state.ln_odds),
-            entity_stakes={
-                e: proto.Stakes(winnings_if_yes=s.if_resolves_yes, winnings_if_no=s.if_resolves_no)
-                for e, s in market.stakes.items()
-            }
-        )))
+    def get_market(self, market_id: MarketId) -> CfarMarket:
+        return self.marketplace.markets[market_id]
 
-    def UpdateCfarMarket(self, request: proto.UpdateCfarMarketRequest, context: grpc.ServicerContext) -> proto.UpdateCfarMarketResponseOrError:
-        market = self.marketplace.markets.get(MarketId(request.market_id))
+    def update_cfar_market(self, market_id: MarketId, participant_id: EntityId, new_state: Probability) -> None:
+        market = self.marketplace.markets.get(market_id)
         if market is None:
-            return grpc.Status(grpc.StatusCode.NOT_FOUND, "no such market")
-        market.set_state(participant=request.participant_id, new_state=Probability(ln_odds=request.new_state.ln_odds))
-        return proto.UpdateCfarMarketResponseOrError(success=proto.UpdateCfarMarketResponse())
+            raise KeyError(market_id)
+        market.set_state(participant=participant_id, new_state=new_state)

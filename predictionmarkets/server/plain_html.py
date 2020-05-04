@@ -12,12 +12,10 @@ from aiohttp import web
 import aiohttp_session  # type: ignore
 import plauth  # type: ignore
 
-from .api.protobuf import service_pb2 as proto  # type: ignore
-from .api.protobuf import service_pb2_grpc as rpc_proto  # type: ignore
 from .. import Probability, CfarMarket, Marketplace, MarketId
 from ..words import random_words
-from .api.marketplace import MarketplaceServer  # type: ignore
-from .api.entity import EntityServer, Token, EntityId, Username  # type: ignore
+from .api.marketplace import MarketplaceService  # type: ignore
+from .api.entity import EntityService, Token, EntityId, Username  # type: ignore
 
 import jinja2
 
@@ -77,19 +75,12 @@ class MarketResources:
     def entity_path(self, id: EntityId):
         return self.entity.url_for(id=id)
 
-def unwrap_rpc(response):
-    if response.WhichOneof("result") != "success":
-        raise web.HTTPBadRequest(
-            body=response.error.message_json,
-            content_type="application/json" if response.error.message_json else "text/plain"
-        )
-    return response.success
 
 class Server:
     def __init__(
         self,
-        entity_service: rpc_proto.EntityServicer,
-        market_service: rpc_proto.MarketplaceServicer,
+        entity_service: EntityService,
+        market_service: MarketplaceService,
         resources: MarketResources,
     ) -> None:
         self.entity_service = entity_service
@@ -119,23 +110,19 @@ class Server:
     def _get_entity(self, session: Session) -> t.Optional[EntityId]:
         if session.token is None:
             return None
-        response = unwrap_rpc(self.entity_service.GetEntityForToken(
-            request=proto.GetEntityForTokenRequest(token=session.token),
-            context=None,
-        ))
-        print(type(response))
-        return response.entity_id
+        try:
+            return self.entity_service.get_entity_for_token(session.token)
+        except KeyError:
+            session.token = None
+            return None
 
     async def get_index(self, request: web.BaseRequest) -> web.StreamResponse:
         current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
-        response = unwrap_rpc(self.market_service.GetPublicMarkets(
-            request=proto.GetPublicMarketsRequest(),
-            context=None
-        ))
+        markets = self.market_service.get_public_markets()
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("index.jinja.html").render(
-                public_markets=response.markets,
+                public_markets=markets,
                 current_entity=current_entity,
                 current_path=request.path,
             ),
@@ -156,36 +143,37 @@ class Server:
     async def post_create_market(self, request: web.BaseRequest) -> web.StreamResponse:
         current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
         post_data = await request.post()
-        response = unwrap_rpc(self.market_service.CreateMarket(
-            request=proto.CreateMarketRequest(
+        try:
+            market_id = self.market_service.create_market(CfarMarket(
                 name=str(post_data["name"]),
                 proposition=str(post_data["proposition"]),
-                floor=proto.Probability(ln_odds=float(str(post_data["floor"]))),
-                ceiling=proto.Probability(ln_odds=float(str(post_data["ceiling"]))),
-                initial_state=proto.Probability(ln_odds=float(str(post_data["state"]))),
-            ),
-            context=None
-        ))
+                floor=Probability(ln_odds=float(str(post_data["floor"]))),
+                ceiling=Probability(ln_odds=float(str(post_data["ceiling"]))),
+                state=Probability(ln_odds=float(str(post_data["state"]))),
+            ))
+        except (ValueError, KeyError, TypeError) as e:
+            return web.HTTPBadRequest(reason=str(e))
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("redirect.jinja.html").render(
                 text="Market created!",
-                dest=self.resources.market_path(id=response.market_id),
+                dest=self.resources.market_path(id=market_id),
             ),
             content_type="text/html",
         )
 
     async def get_market(self, request: web.Request) -> web.StreamResponse:
         current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
-        response = unwrap_rpc(self.market_service.GetMarket(
-            request=proto.GetMarketRequest(id=str(request.match_info["id"])),
-            context=None
-        ))
+        market_id = MarketId(str(request.match_info["id"]))
+        try:
+            market = self.market_service.get_market(market_id=market_id)
+        except KeyError:
+            return web.HTTPNotFound()
         return web.Response(
             status=200,
             body=self.jinja_env.get_template('view-market.jinja.html').render(
-                id=id,
-                market=response.cfar,  # TODO: deal with polymorphism
+                id=market_id,
+                market=market,
                 current_entity=current_entity,  # TODO: these two arguments get passed in a lot; can we refactor them out?
                 current_path=request.path,
             ),
@@ -194,19 +182,18 @@ class Server:
 
     async def post_market(self, request: web.Request) -> web.StreamResponse:
         current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
+        if current_entity is None:
+            return web.HTTPUnauthorized(reason="You gotta be logged in!")
         post_data = await request.post()
         market_id = MarketId(str(request.match_info["id"]))
-        maybe_response = unwrap_rpc(self.market_service.UpdateCfarMarket(
-            request=proto.UpdateCfarMarketRequest(
+        try:
+            self.market_service.update_cfar_market(
                 market_id=market_id,
                 participant_id=current_entity,
-                new_state=proto.Probability(ln_odds=float(str(post_data["state"]))),
-            ),
-            context=None,
-        ))
-        if maybe_response.WhichOneof("result") == "error":
-            return
-        response = maybe_response.success
+                new_state=Probability(ln_odds=float(str(post_data["state"]))),
+            )
+        except KeyError:
+            return web.HTTPNotFound()
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("redirect.jinja.html").render(
@@ -228,14 +215,10 @@ class Server:
             redirect_to = str(post_data["redirectTo"])
         except KeyError as e:
             return web.HTTPBadRequest(reason=str(e))
-        response = unwrap_rpc(self.entity_service.UsernamePasswordLogin(
-            request=proto.UsernamePasswordLoginRequest(
-                username=username,
-                password=password,
-            ),
-            context=None,
-        ))
-        session.token = response.token
+        session.token = self.entity_service.username_password_login(
+            username=username,
+            password=password,
+        )
 
         return web.Response(
             status=200,
@@ -250,12 +233,9 @@ class Server:
         session = Session(await aiohttp_session.get_session(request))
         post_data = await request.post()
         redirect_to = str(post_data["redirectTo"])
-        response = unwrap_rpc(self.entity_service.DeleteToken(
-            request=proto.DeleteTokenRequest(token=session.token),
-            context=None,
-        ))
-
-        session.token = None
+        if session.token is not None:
+            self.entity_service.expire_token(session.token)
+            session.token = None
 
         return web.Response(
             status=200,
@@ -318,8 +298,8 @@ if __name__ == "__main__":
         rng.seed(args.random_seed)
     marketplace = Marketplace(rng=rng)
 
-    entity_service = EntityServer(rng=rng)
-    market_service = MarketplaceServer(marketplace=marketplace)
+    entity_service = EntityService(rng=rng)
+    market_service = MarketplaceService(marketplace=marketplace)
 
     app = web.Application()
     aiohttp_session.setup(app, aiohttp_session.SimpleCookieStorage())
