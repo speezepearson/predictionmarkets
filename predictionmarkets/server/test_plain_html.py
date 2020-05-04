@@ -12,6 +12,7 @@ from predictionmarkets import Marketplace
 from predictionmarkets.server.plain_html import Server, MarketResources
 from predictionmarkets.server.api.entity import EntityService
 from predictionmarkets.server.api.marketplace import MarketplaceService
+from predictionmarkets.server.api.petname import PetnameService
 
 @pytest.fixture
 async def client(aiohttp_client):
@@ -20,6 +21,7 @@ async def client(aiohttp_client):
     Server(
         entity_service=EntityService(),
         market_service=MarketplaceService(Marketplace()),
+        petname_service=PetnameService(),
         resources=MarketResources(app.router),
     ).add_handlers()
     yield await aiohttp_client(app)

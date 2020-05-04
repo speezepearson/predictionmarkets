@@ -1,7 +1,7 @@
 {% macro entity(id) -%}
     <a href="{{resources.entity_path(id)}}">
-        {% if petnames.get(current_entity, id) %}
-            {{ petnames.get(current_entity, id) }}
+        {% if petnames.get(id) %}
+            {{ petnames.get(id) }}
         {% else %}
             {{ id }}
         {% endif %}
@@ -9,8 +9,8 @@
 {%- endmacro %}
 
 {% macro entity_text(id) -%}
-    {% if petnames.get(current_entity, id) %}
-        {{ petnames.get(current_entity, id) }}
+    {% if petnames.get(id) %}
+        {{ petnames.get(id) }}
     {% else %}
         {{ id }}
     {% endif %}

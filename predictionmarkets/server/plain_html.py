@@ -16,10 +16,10 @@ from .. import Probability, CfarMarket, Marketplace, MarketId
 from ..words import random_words
 from .api.marketplace import MarketplaceService  # type: ignore
 from .api.entity import EntityService, Token, EntityId, Username  # type: ignore
+from .api.petname import Petname, PetnameService
 
 import jinja2
 
-Petname = t.NewType("Petname", str)
 
 class Session:
     _TOKEN_KEY = "token"
@@ -40,15 +40,6 @@ class Session:
             del self._aio_session[Session._TOKEN_KEY]
         else:
             self._aio_session[Session._TOKEN_KEY] = value
-
-class PetnameRegistry:
-    def __init__(self):
-        self.viewer_viewed_to_name: t.MutableMapping[t.Tuple[EntityId, EntityId], Petname] = {}
-
-    def add(self, viewer: EntityId, viewed: EntityId, name: Petname) -> None:
-        self.viewer_viewed_to_name[viewer, viewed] = name
-    def get(self, viewer: EntityId, viewed: EntityId) -> t.Optional[Petname]:
-        return self.viewer_viewed_to_name.get((viewer, viewed))
 
 class MarketResources:
     def __init__(self, router: web.UrlDispatcher) -> None:
@@ -81,20 +72,20 @@ class Server:
         self,
         entity_service: EntityService,
         market_service: MarketplaceService,
+        petname_service: PetnameService,
         resources: MarketResources,
     ) -> None:
         self.entity_service = entity_service
         self.market_service = market_service
+        self.petname_service = petname_service
         self.resources = resources
         self.jinja_env = jinja2.Environment(
             loader=jinja2.PackageLoader("predictionmarkets", "templates"),
             autoescape=jinja2.select_autoescape(["html", "xml"]),
             # TODO: undefined=StrictUndefined or something like that
         )
-        self.petnames: PetnameRegistry = PetnameRegistry()
 
         self.jinja_env.globals["resources"] = self.resources
-        self.jinja_env.globals["petnames"] = self.petnames
 
     def add_handlers(self):
         self.resources.index.add_route("GET", self.get_index)
@@ -125,6 +116,7 @@ class Server:
                 public_markets=markets,
                 current_entity=current_entity,
                 current_path=request.path,
+                petnames=self.petname_service.get_petnames(viewer=current_entity) if (current_entity is not None) else {},
             ),
             content_type="text/html",
         )
@@ -136,6 +128,7 @@ class Server:
             body=self.jinja_env.get_template("create-market.jinja.html").render(
                 current_entity=current_entity,
                 current_path=request.path,
+                petnames=self.petname_service.get_petnames(viewer=current_entity) if (current_entity is not None) else {},
             ),
             content_type="text/html",
         )
@@ -174,8 +167,9 @@ class Server:
             body=self.jinja_env.get_template('view-market.jinja.html').render(
                 id=market_id,
                 market=market,
-                current_entity=current_entity,  # TODO: these two arguments get passed in a lot; can we refactor them out?
+                current_entity=current_entity,  # TODO: these three arguments get passed in a lot; can we refactor them out?
                 current_path=request.path,
+                petnames=self.petname_service.get_petnames(viewer=current_entity) if (current_entity is not None) else {},
             ),
             content_type="text/html",
         )
@@ -259,7 +253,7 @@ class Server:
         except KeyError as e:
             return web.HTTPBadRequest(reason=str(e))
 
-        self.petnames.add(current_entity, entity_id, petname)
+        self.petname_service.add_petname(current_entity, entity_id, petname)
 
         return web.Response(
             status=200,
@@ -279,6 +273,7 @@ class Server:
                 id=id,
                 current_entity=current_entity,
                 current_path=request.path,
+                petnames=self.petname_service.get_petnames(viewer=current_entity) if (current_entity is not None) else {},
             ),
             content_type="text/html",
         )
@@ -306,6 +301,7 @@ if __name__ == "__main__":
     html_server = Server(
         entity_service=entity_service,
         market_service=market_service,
+        petname_service=PetnameService(),
         resources=MarketResources(app.router),
     )
     html_server.add_handlers()
