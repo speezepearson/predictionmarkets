@@ -13,6 +13,11 @@ class MarketplaceStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.GetPublicMarkets = channel.unary_unary(
+                '/predictionmarkets.protobuf.Marketplace/GetPublicMarkets',
+                request_serializer=predictionmarkets_dot_server_dot_api_dot_protobuf_dot_service__pb2.GetPublicMarketsRequest.SerializeToString,
+                response_deserializer=predictionmarkets_dot_server_dot_api_dot_protobuf_dot_service__pb2.GetPublicMarketsResponse.FromString,
+                )
         self.CreateMarket = channel.unary_unary(
                 '/predictionmarkets.protobuf.Marketplace/CreateMarket',
                 request_serializer=predictionmarkets_dot_server_dot_api_dot_protobuf_dot_service__pb2.CreateMarketRequest.SerializeToString,
@@ -32,6 +37,12 @@ class MarketplaceStub(object):
 
 class MarketplaceServicer(object):
     """Missing associated documentation comment in .proto file"""
+
+    def GetPublicMarkets(self, request, context):
+        """Missing associated documentation comment in .proto file"""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def CreateMarket(self, request, context):
         """Missing associated documentation comment in .proto file"""
@@ -54,6 +65,11 @@ class MarketplaceServicer(object):
 
 def add_MarketplaceServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'GetPublicMarkets': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetPublicMarkets,
+                    request_deserializer=predictionmarkets_dot_server_dot_api_dot_protobuf_dot_service__pb2.GetPublicMarketsRequest.FromString,
+                    response_serializer=predictionmarkets_dot_server_dot_api_dot_protobuf_dot_service__pb2.GetPublicMarketsResponse.SerializeToString,
+            ),
             'CreateMarket': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateMarket,
                     request_deserializer=predictionmarkets_dot_server_dot_api_dot_protobuf_dot_service__pb2.CreateMarketRequest.FromString,
@@ -78,6 +94,22 @@ def add_MarketplaceServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class Marketplace(object):
     """Missing associated documentation comment in .proto file"""
+
+    @staticmethod
+    def GetPublicMarkets(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/predictionmarkets.protobuf.Marketplace/GetPublicMarkets',
+            predictionmarkets_dot_server_dot_api_dot_protobuf_dot_service__pb2.GetPublicMarketsRequest.SerializeToString,
+            predictionmarkets_dot_server_dot_api_dot_protobuf_dot_service__pb2.GetPublicMarketsResponse.FromString,
+            options, channel_credentials,
+            call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def CreateMarket(request,

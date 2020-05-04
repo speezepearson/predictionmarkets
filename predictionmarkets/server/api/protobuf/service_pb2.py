@@ -18,10 +18,48 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='predictionmarkets.protobuf',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n3predictionmarkets/server/api/protobuf/service.proto\x12\x1apredictionmarkets.protobuf\"\x1e\n\x0bProbability\x12\x0f\n\x07ln_odds\x18\x01 \x01(\x01\"9\n\x06Stakes\x12\x17\n\x0fwinnings_if_yes\x18\x01 \x01(\x01\x12\x16\n\x0ewinnings_if_no\x18\x02 \x01(\x01\"\x83\x03\n\nCfarMarket\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0bproposition\x18\x02 \x01(\t\x12\x36\n\x05\x66loor\x18\x03 \x01(\x0b\x32\'.predictionmarkets.protobuf.Probability\x12\x38\n\x07\x63\x65iling\x18\x04 \x01(\x0b\x32\'.predictionmarkets.protobuf.Probability\x12\x36\n\x05state\x18\x05 \x01(\x0b\x32\'.predictionmarkets.protobuf.Probability\x12O\n\rentity_stakes\x18\x06 \x03(\x0b\x32\x38.predictionmarkets.protobuf.CfarMarket.EntityStakesEntry\x1aW\n\x11\x45ntityStakesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".predictionmarkets.protobuf.Stakes:\x02\x38\x01\"\xea\x01\n\x13\x43reateMarketRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0bproposition\x18\x02 \x01(\t\x12\x36\n\x05\x66loor\x18\x03 \x01(\x0b\x32\'.predictionmarkets.protobuf.Probability\x12\x38\n\x07\x63\x65iling\x18\x04 \x01(\x0b\x32\'.predictionmarkets.protobuf.Probability\x12>\n\rinitial_state\x18\x05 \x01(\x0b\x32\'.predictionmarkets.protobuf.Probability\")\n\x14\x43reateMarketResponse\x12\x11\n\tmarket_id\x18\x01 \x01(\t\"\x1e\n\x10GetMarketRequest\x12\n\n\x02id\x18\x01 \x01(\t\"U\n\x11GetMarketResponse\x12\x36\n\x04\x63\x66\x61r\x18\x01 \x01(\x0b\x32&.predictionmarkets.protobuf.CfarMarketH\x00\x42\x08\n\x06market\"\x80\x01\n\x17UpdateCfarMarketRequest\x12\x11\n\tmarket_id\x18\x01 \x01(\t\x12\x16\n\x0eparticipant_id\x18\x02 \x01(\t\x12:\n\tnew_state\x18\x03 \x01(\x0b\x32\'.predictionmarkets.protobuf.Probability\"\x1a\n\x18UpdateCfarMarketResponse\"B\n\x1cUsernamePasswordLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\".\n\x1dUsernamePasswordLoginResponse\x12\r\n\x05token\x18\x01 \x01(\t\")\n\x18GetEntityForTokenRequest\x12\r\n\x05token\x18\x01 \x01(\t\".\n\x19GetEntityForTokenResponse\x12\x11\n\tentity_id\x18\x01 \x01(\t\"#\n\x12\x44\x65leteTokenRequest\x12\r\n\x05token\x18\x01 \x01(\t\"\x15\n\x13\x44\x65leteTokenResponse2\xef\x02\n\x0bMarketplace\x12s\n\x0c\x43reateMarket\x12/.predictionmarkets.protobuf.CreateMarketRequest\x1a\x30.predictionmarkets.protobuf.CreateMarketResponse\"\x00\x12j\n\tGetMarket\x12,.predictionmarkets.protobuf.GetMarketRequest\x1a-.predictionmarkets.protobuf.GetMarketResponse\"\x00\x12\x7f\n\x10UpdateCfarMarket\x12\x33.predictionmarkets.protobuf.UpdateCfarMarketRequest\x1a\x34.predictionmarkets.protobuf.UpdateCfarMarketResponse\"\x00\x32\x90\x03\n\x06\x45ntity\x12\x8e\x01\n\x15UsernamePasswordLogin\x12\x38.predictionmarkets.protobuf.UsernamePasswordLoginRequest\x1a\x39.predictionmarkets.protobuf.UsernamePasswordLoginResponse\"\x00\x12\x82\x01\n\x11GetEntityForToken\x12\x34.predictionmarkets.protobuf.GetEntityForTokenRequest\x1a\x35.predictionmarkets.protobuf.GetEntityForTokenResponse\"\x00\x12p\n\x0b\x44\x65leteToken\x12..predictionmarkets.protobuf.DeleteTokenRequest\x1a/.predictionmarkets.protobuf.DeleteTokenResponse\"\x00\x62\x06proto3'
+  serialized_pb=b'\n3predictionmarkets/server/api/protobuf/service.proto\x12\x1apredictionmarkets.protobuf\"5\n\x08RpcError\x12\x13\n\x0bhttp_status\x18\x01 \x01(\x05\x12\x14\n\x0cmessage_json\x18\x02 \x01(\t\"\x1e\n\x0bProbability\x12\x0f\n\x07ln_odds\x18\x01 \x01(\x01\"9\n\x06Stakes\x12\x17\n\x0fwinnings_if_yes\x18\x01 \x01(\x01\x12\x16\n\x0ewinnings_if_no\x18\x02 \x01(\x01\"\x83\x03\n\nCfarMarket\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0bproposition\x18\x02 \x01(\t\x12\x36\n\x05\x66loor\x18\x03 \x01(\x0b\x32\'.predictionmarkets.protobuf.Probability\x12\x38\n\x07\x63\x65iling\x18\x04 \x01(\x0b\x32\'.predictionmarkets.protobuf.Probability\x12\x36\n\x05state\x18\x05 \x01(\x0b\x32\'.predictionmarkets.protobuf.Probability\x12O\n\rentity_stakes\x18\x06 \x03(\x0b\x32\x38.predictionmarkets.protobuf.CfarMarket.EntityStakesEntry\x1aW\n\x11\x45ntityStakesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".predictionmarkets.protobuf.Stakes:\x02\x38\x01\"\x19\n\x17GetPublicMarketsRequest\"\xab\x01\n\x1fGetPublicMarketsResponseOrError\x12G\n\x07success\x18\x01 \x01(\x0b\x32\x34.predictionmarkets.protobuf.GetPublicMarketsResponseH\x00\x12\x35\n\x05\x65rror\x18\x02 \x01(\x0b\x32$.predictionmarkets.protobuf.RpcErrorH\x00\x42\x08\n\x06result\"\xd9\x01\n\x18GetPublicMarketsResponse\x12_\n\x0epublic_markets\x18\x01 \x03(\x0b\x32G.predictionmarkets.protobuf.GetPublicMarketsResponse.PublicMarketsEntry\x1a\\\n\x12PublicMarketsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x35\n\x05value\x18\x02 \x01(\x0b\x32&.predictionmarkets.protobuf.CfarMarket:\x02\x38\x01\"\xea\x01\n\x13\x43reateMarketRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0bproposition\x18\x02 \x01(\t\x12\x36\n\x05\x66loor\x18\x03 \x01(\x0b\x32\'.predictionmarkets.protobuf.Probability\x12\x38\n\x07\x63\x65iling\x18\x04 \x01(\x0b\x32\'.predictionmarkets.protobuf.Probability\x12>\n\rinitial_state\x18\x05 \x01(\x0b\x32\'.predictionmarkets.protobuf.Probability\"\xa3\x01\n\x1b\x43reateMarketResponseOrError\x12\x43\n\x07success\x18\x01 \x01(\x0b\x32\x30.predictionmarkets.protobuf.CreateMarketResponseH\x00\x12\x35\n\x05\x65rror\x18\x02 \x01(\x0b\x32$.predictionmarkets.protobuf.RpcErrorH\x00\x42\x08\n\x06result\")\n\x14\x43reateMarketResponse\x12\x11\n\tmarket_id\x18\x01 \x01(\t\"\x1e\n\x10GetMarketRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x9d\x01\n\x18GetMarketResponseOrError\x12@\n\x07success\x18\x01 \x01(\x0b\x32-.predictionmarkets.protobuf.GetMarketResponseH\x00\x12\x35\n\x05\x65rror\x18\x02 \x01(\x0b\x32$.predictionmarkets.protobuf.RpcErrorH\x00\x42\x08\n\x06result\"U\n\x11GetMarketResponse\x12\x36\n\x04\x63\x66\x61r\x18\x01 \x01(\x0b\x32&.predictionmarkets.protobuf.CfarMarketH\x00\x42\x08\n\x06market\"\x80\x01\n\x17UpdateCfarMarketRequest\x12\x11\n\tmarket_id\x18\x01 \x01(\t\x12\x16\n\x0eparticipant_id\x18\x02 \x01(\t\x12:\n\tnew_state\x18\x03 \x01(\x0b\x32\'.predictionmarkets.protobuf.Probability\"\xab\x01\n\x1fUpdateCfarMarketResponseOrError\x12G\n\x07success\x18\x01 \x01(\x0b\x32\x34.predictionmarkets.protobuf.UpdateCfarMarketResponseH\x00\x12\x35\n\x05\x65rror\x18\x02 \x01(\x0b\x32$.predictionmarkets.protobuf.RpcErrorH\x00\x42\x08\n\x06result\"\x1a\n\x18UpdateCfarMarketResponse\"B\n\x1cUsernamePasswordLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\"\xb5\x01\n$UsernamePasswordLoginResponseOrError\x12L\n\x07success\x18\x01 \x01(\x0b\x32\x39.predictionmarkets.protobuf.UsernamePasswordLoginResponseH\x00\x12\x35\n\x05\x65rror\x18\x02 \x01(\x0b\x32$.predictionmarkets.protobuf.RpcErrorH\x00\x42\x08\n\x06result\".\n\x1dUsernamePasswordLoginResponse\x12\r\n\x05token\x18\x01 \x01(\t\")\n\x18GetEntityForTokenRequest\x12\r\n\x05token\x18\x01 \x01(\t\"\xad\x01\n GetEntityForTokenResponseOrError\x12H\n\x07success\x18\x01 \x01(\x0b\x32\x35.predictionmarkets.protobuf.GetEntityForTokenResponseH\x00\x12\x35\n\x05\x65rror\x18\x02 \x01(\x0b\x32$.predictionmarkets.protobuf.RpcErrorH\x00\x42\x08\n\x06result\".\n\x19GetEntityForTokenResponse\x12\x11\n\tentity_id\x18\x01 \x01(\t\"#\n\x12\x44\x65leteTokenRequest\x12\r\n\x05token\x18\x01 \x01(\t\"\xa1\x01\n\x1a\x44\x65leteTokenResponseOrError\x12\x42\n\x07success\x18\x01 \x01(\x0b\x32/.predictionmarkets.protobuf.DeleteTokenResponseH\x00\x12\x35\n\x05\x65rror\x18\x02 \x01(\x0b\x32$.predictionmarkets.protobuf.RpcErrorH\x00\x42\x08\n\x06result\"\x15\n\x13\x44\x65leteTokenResponse2\xf0\x03\n\x0bMarketplace\x12\x7f\n\x10GetPublicMarkets\x12\x33.predictionmarkets.protobuf.GetPublicMarketsRequest\x1a\x34.predictionmarkets.protobuf.GetPublicMarketsResponse\"\x00\x12s\n\x0c\x43reateMarket\x12/.predictionmarkets.protobuf.CreateMarketRequest\x1a\x30.predictionmarkets.protobuf.CreateMarketResponse\"\x00\x12j\n\tGetMarket\x12,.predictionmarkets.protobuf.GetMarketRequest\x1a-.predictionmarkets.protobuf.GetMarketResponse\"\x00\x12\x7f\n\x10UpdateCfarMarket\x12\x33.predictionmarkets.protobuf.UpdateCfarMarketRequest\x1a\x34.predictionmarkets.protobuf.UpdateCfarMarketResponse\"\x00\x32\x90\x03\n\x06\x45ntity\x12\x8e\x01\n\x15UsernamePasswordLogin\x12\x38.predictionmarkets.protobuf.UsernamePasswordLoginRequest\x1a\x39.predictionmarkets.protobuf.UsernamePasswordLoginResponse\"\x00\x12\x82\x01\n\x11GetEntityForToken\x12\x34.predictionmarkets.protobuf.GetEntityForTokenRequest\x1a\x35.predictionmarkets.protobuf.GetEntityForTokenResponse\"\x00\x12p\n\x0b\x44\x65leteToken\x12..predictionmarkets.protobuf.DeleteTokenRequest\x1a/.predictionmarkets.protobuf.DeleteTokenResponse\"\x00\x62\x06proto3'
 )
 
 
+
+
+_RPCERROR = _descriptor.Descriptor(
+  name='RpcError',
+  full_name='predictionmarkets.protobuf.RpcError',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='http_status', full_name='predictionmarkets.protobuf.RpcError.http_status', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='message_json', full_name='predictionmarkets.protobuf.RpcError.message_json', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=83,
+  serialized_end=136,
+)
 
 
 _PROBABILITY = _descriptor.Descriptor(
@@ -50,8 +88,8 @@ _PROBABILITY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=83,
-  serialized_end=113,
+  serialized_start=138,
+  serialized_end=168,
 )
 
 
@@ -88,8 +126,8 @@ _STAKES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=115,
-  serialized_end=172,
+  serialized_start=170,
+  serialized_end=227,
 )
 
 
@@ -126,8 +164,8 @@ _CFARMARKET_ENTITYSTAKESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=475,
-  serialized_end=562,
+  serialized_start=530,
+  serialized_end=617,
 )
 
 _CFARMARKET = _descriptor.Descriptor(
@@ -191,8 +229,141 @@ _CFARMARKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=175,
-  serialized_end=562,
+  serialized_start=230,
+  serialized_end=617,
+)
+
+
+_GETPUBLICMARKETSREQUEST = _descriptor.Descriptor(
+  name='GetPublicMarketsRequest',
+  full_name='predictionmarkets.protobuf.GetPublicMarketsRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=619,
+  serialized_end=644,
+)
+
+
+_GETPUBLICMARKETSRESPONSEORERROR = _descriptor.Descriptor(
+  name='GetPublicMarketsResponseOrError',
+  full_name='predictionmarkets.protobuf.GetPublicMarketsResponseOrError',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='success', full_name='predictionmarkets.protobuf.GetPublicMarketsResponseOrError.success', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='predictionmarkets.protobuf.GetPublicMarketsResponseOrError.error', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='result', full_name='predictionmarkets.protobuf.GetPublicMarketsResponseOrError.result',
+      index=0, containing_type=None, fields=[]),
+  ],
+  serialized_start=647,
+  serialized_end=818,
+)
+
+
+_GETPUBLICMARKETSRESPONSE_PUBLICMARKETSENTRY = _descriptor.Descriptor(
+  name='PublicMarketsEntry',
+  full_name='predictionmarkets.protobuf.GetPublicMarketsResponse.PublicMarketsEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='predictionmarkets.protobuf.GetPublicMarketsResponse.PublicMarketsEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='predictionmarkets.protobuf.GetPublicMarketsResponse.PublicMarketsEntry.value', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=b'8\001',
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=946,
+  serialized_end=1038,
+)
+
+_GETPUBLICMARKETSRESPONSE = _descriptor.Descriptor(
+  name='GetPublicMarketsResponse',
+  full_name='predictionmarkets.protobuf.GetPublicMarketsResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='public_markets', full_name='predictionmarkets.protobuf.GetPublicMarketsResponse.public_markets', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_GETPUBLICMARKETSRESPONSE_PUBLICMARKETSENTRY, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=821,
+  serialized_end=1038,
 )
 
 
@@ -250,8 +421,49 @@ _CREATEMARKETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=565,
-  serialized_end=799,
+  serialized_start=1041,
+  serialized_end=1275,
+)
+
+
+_CREATEMARKETRESPONSEORERROR = _descriptor.Descriptor(
+  name='CreateMarketResponseOrError',
+  full_name='predictionmarkets.protobuf.CreateMarketResponseOrError',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='success', full_name='predictionmarkets.protobuf.CreateMarketResponseOrError.success', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='predictionmarkets.protobuf.CreateMarketResponseOrError.error', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='result', full_name='predictionmarkets.protobuf.CreateMarketResponseOrError.result',
+      index=0, containing_type=None, fields=[]),
+  ],
+  serialized_start=1278,
+  serialized_end=1441,
 )
 
 
@@ -281,8 +493,8 @@ _CREATEMARKETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=801,
-  serialized_end=842,
+  serialized_start=1443,
+  serialized_end=1484,
 )
 
 
@@ -312,8 +524,49 @@ _GETMARKETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=844,
-  serialized_end=874,
+  serialized_start=1486,
+  serialized_end=1516,
+)
+
+
+_GETMARKETRESPONSEORERROR = _descriptor.Descriptor(
+  name='GetMarketResponseOrError',
+  full_name='predictionmarkets.protobuf.GetMarketResponseOrError',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='success', full_name='predictionmarkets.protobuf.GetMarketResponseOrError.success', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='predictionmarkets.protobuf.GetMarketResponseOrError.error', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='result', full_name='predictionmarkets.protobuf.GetMarketResponseOrError.result',
+      index=0, containing_type=None, fields=[]),
+  ],
+  serialized_start=1519,
+  serialized_end=1676,
 )
 
 
@@ -346,8 +599,8 @@ _GETMARKETRESPONSE = _descriptor.Descriptor(
       name='market', full_name='predictionmarkets.protobuf.GetMarketResponse.market',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=876,
-  serialized_end=961,
+  serialized_start=1678,
+  serialized_end=1763,
 )
 
 
@@ -391,8 +644,49 @@ _UPDATECFARMARKETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=964,
-  serialized_end=1092,
+  serialized_start=1766,
+  serialized_end=1894,
+)
+
+
+_UPDATECFARMARKETRESPONSEORERROR = _descriptor.Descriptor(
+  name='UpdateCfarMarketResponseOrError',
+  full_name='predictionmarkets.protobuf.UpdateCfarMarketResponseOrError',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='success', full_name='predictionmarkets.protobuf.UpdateCfarMarketResponseOrError.success', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='predictionmarkets.protobuf.UpdateCfarMarketResponseOrError.error', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='result', full_name='predictionmarkets.protobuf.UpdateCfarMarketResponseOrError.result',
+      index=0, containing_type=None, fields=[]),
+  ],
+  serialized_start=1897,
+  serialized_end=2068,
 )
 
 
@@ -415,8 +709,8 @@ _UPDATECFARMARKETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1094,
-  serialized_end=1120,
+  serialized_start=2070,
+  serialized_end=2096,
 )
 
 
@@ -453,8 +747,49 @@ _USERNAMEPASSWORDLOGINREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1122,
-  serialized_end=1188,
+  serialized_start=2098,
+  serialized_end=2164,
+)
+
+
+_USERNAMEPASSWORDLOGINRESPONSEORERROR = _descriptor.Descriptor(
+  name='UsernamePasswordLoginResponseOrError',
+  full_name='predictionmarkets.protobuf.UsernamePasswordLoginResponseOrError',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='success', full_name='predictionmarkets.protobuf.UsernamePasswordLoginResponseOrError.success', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='predictionmarkets.protobuf.UsernamePasswordLoginResponseOrError.error', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='result', full_name='predictionmarkets.protobuf.UsernamePasswordLoginResponseOrError.result',
+      index=0, containing_type=None, fields=[]),
+  ],
+  serialized_start=2167,
+  serialized_end=2348,
 )
 
 
@@ -484,8 +819,8 @@ _USERNAMEPASSWORDLOGINRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1190,
-  serialized_end=1236,
+  serialized_start=2350,
+  serialized_end=2396,
 )
 
 
@@ -515,8 +850,49 @@ _GETENTITYFORTOKENREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1238,
-  serialized_end=1279,
+  serialized_start=2398,
+  serialized_end=2439,
+)
+
+
+_GETENTITYFORTOKENRESPONSEORERROR = _descriptor.Descriptor(
+  name='GetEntityForTokenResponseOrError',
+  full_name='predictionmarkets.protobuf.GetEntityForTokenResponseOrError',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='success', full_name='predictionmarkets.protobuf.GetEntityForTokenResponseOrError.success', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='predictionmarkets.protobuf.GetEntityForTokenResponseOrError.error', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='result', full_name='predictionmarkets.protobuf.GetEntityForTokenResponseOrError.result',
+      index=0, containing_type=None, fields=[]),
+  ],
+  serialized_start=2442,
+  serialized_end=2615,
 )
 
 
@@ -546,8 +922,8 @@ _GETENTITYFORTOKENRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1281,
-  serialized_end=1327,
+  serialized_start=2617,
+  serialized_end=2663,
 )
 
 
@@ -577,8 +953,49 @@ _DELETETOKENREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1329,
-  serialized_end=1364,
+  serialized_start=2665,
+  serialized_end=2700,
+)
+
+
+_DELETETOKENRESPONSEORERROR = _descriptor.Descriptor(
+  name='DeleteTokenResponseOrError',
+  full_name='predictionmarkets.protobuf.DeleteTokenResponseOrError',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='success', full_name='predictionmarkets.protobuf.DeleteTokenResponseOrError.success', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='predictionmarkets.protobuf.DeleteTokenResponseOrError.error', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='result', full_name='predictionmarkets.protobuf.DeleteTokenResponseOrError.result',
+      index=0, containing_type=None, fields=[]),
+  ],
+  serialized_start=2703,
+  serialized_end=2864,
 )
 
 
@@ -601,8 +1018,8 @@ _DELETETOKENRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1366,
-  serialized_end=1387,
+  serialized_start=2866,
+  serialized_end=2887,
 )
 
 _CFARMARKET_ENTITYSTAKESENTRY.fields_by_name['value'].message_type = _STAKES
@@ -611,30 +1028,106 @@ _CFARMARKET.fields_by_name['floor'].message_type = _PROBABILITY
 _CFARMARKET.fields_by_name['ceiling'].message_type = _PROBABILITY
 _CFARMARKET.fields_by_name['state'].message_type = _PROBABILITY
 _CFARMARKET.fields_by_name['entity_stakes'].message_type = _CFARMARKET_ENTITYSTAKESENTRY
+_GETPUBLICMARKETSRESPONSEORERROR.fields_by_name['success'].message_type = _GETPUBLICMARKETSRESPONSE
+_GETPUBLICMARKETSRESPONSEORERROR.fields_by_name['error'].message_type = _RPCERROR
+_GETPUBLICMARKETSRESPONSEORERROR.oneofs_by_name['result'].fields.append(
+  _GETPUBLICMARKETSRESPONSEORERROR.fields_by_name['success'])
+_GETPUBLICMARKETSRESPONSEORERROR.fields_by_name['success'].containing_oneof = _GETPUBLICMARKETSRESPONSEORERROR.oneofs_by_name['result']
+_GETPUBLICMARKETSRESPONSEORERROR.oneofs_by_name['result'].fields.append(
+  _GETPUBLICMARKETSRESPONSEORERROR.fields_by_name['error'])
+_GETPUBLICMARKETSRESPONSEORERROR.fields_by_name['error'].containing_oneof = _GETPUBLICMARKETSRESPONSEORERROR.oneofs_by_name['result']
+_GETPUBLICMARKETSRESPONSE_PUBLICMARKETSENTRY.fields_by_name['value'].message_type = _CFARMARKET
+_GETPUBLICMARKETSRESPONSE_PUBLICMARKETSENTRY.containing_type = _GETPUBLICMARKETSRESPONSE
+_GETPUBLICMARKETSRESPONSE.fields_by_name['public_markets'].message_type = _GETPUBLICMARKETSRESPONSE_PUBLICMARKETSENTRY
 _CREATEMARKETREQUEST.fields_by_name['floor'].message_type = _PROBABILITY
 _CREATEMARKETREQUEST.fields_by_name['ceiling'].message_type = _PROBABILITY
 _CREATEMARKETREQUEST.fields_by_name['initial_state'].message_type = _PROBABILITY
+_CREATEMARKETRESPONSEORERROR.fields_by_name['success'].message_type = _CREATEMARKETRESPONSE
+_CREATEMARKETRESPONSEORERROR.fields_by_name['error'].message_type = _RPCERROR
+_CREATEMARKETRESPONSEORERROR.oneofs_by_name['result'].fields.append(
+  _CREATEMARKETRESPONSEORERROR.fields_by_name['success'])
+_CREATEMARKETRESPONSEORERROR.fields_by_name['success'].containing_oneof = _CREATEMARKETRESPONSEORERROR.oneofs_by_name['result']
+_CREATEMARKETRESPONSEORERROR.oneofs_by_name['result'].fields.append(
+  _CREATEMARKETRESPONSEORERROR.fields_by_name['error'])
+_CREATEMARKETRESPONSEORERROR.fields_by_name['error'].containing_oneof = _CREATEMARKETRESPONSEORERROR.oneofs_by_name['result']
+_GETMARKETRESPONSEORERROR.fields_by_name['success'].message_type = _GETMARKETRESPONSE
+_GETMARKETRESPONSEORERROR.fields_by_name['error'].message_type = _RPCERROR
+_GETMARKETRESPONSEORERROR.oneofs_by_name['result'].fields.append(
+  _GETMARKETRESPONSEORERROR.fields_by_name['success'])
+_GETMARKETRESPONSEORERROR.fields_by_name['success'].containing_oneof = _GETMARKETRESPONSEORERROR.oneofs_by_name['result']
+_GETMARKETRESPONSEORERROR.oneofs_by_name['result'].fields.append(
+  _GETMARKETRESPONSEORERROR.fields_by_name['error'])
+_GETMARKETRESPONSEORERROR.fields_by_name['error'].containing_oneof = _GETMARKETRESPONSEORERROR.oneofs_by_name['result']
 _GETMARKETRESPONSE.fields_by_name['cfar'].message_type = _CFARMARKET
 _GETMARKETRESPONSE.oneofs_by_name['market'].fields.append(
   _GETMARKETRESPONSE.fields_by_name['cfar'])
 _GETMARKETRESPONSE.fields_by_name['cfar'].containing_oneof = _GETMARKETRESPONSE.oneofs_by_name['market']
 _UPDATECFARMARKETREQUEST.fields_by_name['new_state'].message_type = _PROBABILITY
+_UPDATECFARMARKETRESPONSEORERROR.fields_by_name['success'].message_type = _UPDATECFARMARKETRESPONSE
+_UPDATECFARMARKETRESPONSEORERROR.fields_by_name['error'].message_type = _RPCERROR
+_UPDATECFARMARKETRESPONSEORERROR.oneofs_by_name['result'].fields.append(
+  _UPDATECFARMARKETRESPONSEORERROR.fields_by_name['success'])
+_UPDATECFARMARKETRESPONSEORERROR.fields_by_name['success'].containing_oneof = _UPDATECFARMARKETRESPONSEORERROR.oneofs_by_name['result']
+_UPDATECFARMARKETRESPONSEORERROR.oneofs_by_name['result'].fields.append(
+  _UPDATECFARMARKETRESPONSEORERROR.fields_by_name['error'])
+_UPDATECFARMARKETRESPONSEORERROR.fields_by_name['error'].containing_oneof = _UPDATECFARMARKETRESPONSEORERROR.oneofs_by_name['result']
+_USERNAMEPASSWORDLOGINRESPONSEORERROR.fields_by_name['success'].message_type = _USERNAMEPASSWORDLOGINRESPONSE
+_USERNAMEPASSWORDLOGINRESPONSEORERROR.fields_by_name['error'].message_type = _RPCERROR
+_USERNAMEPASSWORDLOGINRESPONSEORERROR.oneofs_by_name['result'].fields.append(
+  _USERNAMEPASSWORDLOGINRESPONSEORERROR.fields_by_name['success'])
+_USERNAMEPASSWORDLOGINRESPONSEORERROR.fields_by_name['success'].containing_oneof = _USERNAMEPASSWORDLOGINRESPONSEORERROR.oneofs_by_name['result']
+_USERNAMEPASSWORDLOGINRESPONSEORERROR.oneofs_by_name['result'].fields.append(
+  _USERNAMEPASSWORDLOGINRESPONSEORERROR.fields_by_name['error'])
+_USERNAMEPASSWORDLOGINRESPONSEORERROR.fields_by_name['error'].containing_oneof = _USERNAMEPASSWORDLOGINRESPONSEORERROR.oneofs_by_name['result']
+_GETENTITYFORTOKENRESPONSEORERROR.fields_by_name['success'].message_type = _GETENTITYFORTOKENRESPONSE
+_GETENTITYFORTOKENRESPONSEORERROR.fields_by_name['error'].message_type = _RPCERROR
+_GETENTITYFORTOKENRESPONSEORERROR.oneofs_by_name['result'].fields.append(
+  _GETENTITYFORTOKENRESPONSEORERROR.fields_by_name['success'])
+_GETENTITYFORTOKENRESPONSEORERROR.fields_by_name['success'].containing_oneof = _GETENTITYFORTOKENRESPONSEORERROR.oneofs_by_name['result']
+_GETENTITYFORTOKENRESPONSEORERROR.oneofs_by_name['result'].fields.append(
+  _GETENTITYFORTOKENRESPONSEORERROR.fields_by_name['error'])
+_GETENTITYFORTOKENRESPONSEORERROR.fields_by_name['error'].containing_oneof = _GETENTITYFORTOKENRESPONSEORERROR.oneofs_by_name['result']
+_DELETETOKENRESPONSEORERROR.fields_by_name['success'].message_type = _DELETETOKENRESPONSE
+_DELETETOKENRESPONSEORERROR.fields_by_name['error'].message_type = _RPCERROR
+_DELETETOKENRESPONSEORERROR.oneofs_by_name['result'].fields.append(
+  _DELETETOKENRESPONSEORERROR.fields_by_name['success'])
+_DELETETOKENRESPONSEORERROR.fields_by_name['success'].containing_oneof = _DELETETOKENRESPONSEORERROR.oneofs_by_name['result']
+_DELETETOKENRESPONSEORERROR.oneofs_by_name['result'].fields.append(
+  _DELETETOKENRESPONSEORERROR.fields_by_name['error'])
+_DELETETOKENRESPONSEORERROR.fields_by_name['error'].containing_oneof = _DELETETOKENRESPONSEORERROR.oneofs_by_name['result']
+DESCRIPTOR.message_types_by_name['RpcError'] = _RPCERROR
 DESCRIPTOR.message_types_by_name['Probability'] = _PROBABILITY
 DESCRIPTOR.message_types_by_name['Stakes'] = _STAKES
 DESCRIPTOR.message_types_by_name['CfarMarket'] = _CFARMARKET
+DESCRIPTOR.message_types_by_name['GetPublicMarketsRequest'] = _GETPUBLICMARKETSREQUEST
+DESCRIPTOR.message_types_by_name['GetPublicMarketsResponseOrError'] = _GETPUBLICMARKETSRESPONSEORERROR
+DESCRIPTOR.message_types_by_name['GetPublicMarketsResponse'] = _GETPUBLICMARKETSRESPONSE
 DESCRIPTOR.message_types_by_name['CreateMarketRequest'] = _CREATEMARKETREQUEST
+DESCRIPTOR.message_types_by_name['CreateMarketResponseOrError'] = _CREATEMARKETRESPONSEORERROR
 DESCRIPTOR.message_types_by_name['CreateMarketResponse'] = _CREATEMARKETRESPONSE
 DESCRIPTOR.message_types_by_name['GetMarketRequest'] = _GETMARKETREQUEST
+DESCRIPTOR.message_types_by_name['GetMarketResponseOrError'] = _GETMARKETRESPONSEORERROR
 DESCRIPTOR.message_types_by_name['GetMarketResponse'] = _GETMARKETRESPONSE
 DESCRIPTOR.message_types_by_name['UpdateCfarMarketRequest'] = _UPDATECFARMARKETREQUEST
+DESCRIPTOR.message_types_by_name['UpdateCfarMarketResponseOrError'] = _UPDATECFARMARKETRESPONSEORERROR
 DESCRIPTOR.message_types_by_name['UpdateCfarMarketResponse'] = _UPDATECFARMARKETRESPONSE
 DESCRIPTOR.message_types_by_name['UsernamePasswordLoginRequest'] = _USERNAMEPASSWORDLOGINREQUEST
+DESCRIPTOR.message_types_by_name['UsernamePasswordLoginResponseOrError'] = _USERNAMEPASSWORDLOGINRESPONSEORERROR
 DESCRIPTOR.message_types_by_name['UsernamePasswordLoginResponse'] = _USERNAMEPASSWORDLOGINRESPONSE
 DESCRIPTOR.message_types_by_name['GetEntityForTokenRequest'] = _GETENTITYFORTOKENREQUEST
+DESCRIPTOR.message_types_by_name['GetEntityForTokenResponseOrError'] = _GETENTITYFORTOKENRESPONSEORERROR
 DESCRIPTOR.message_types_by_name['GetEntityForTokenResponse'] = _GETENTITYFORTOKENRESPONSE
 DESCRIPTOR.message_types_by_name['DeleteTokenRequest'] = _DELETETOKENREQUEST
+DESCRIPTOR.message_types_by_name['DeleteTokenResponseOrError'] = _DELETETOKENRESPONSEORERROR
 DESCRIPTOR.message_types_by_name['DeleteTokenResponse'] = _DELETETOKENRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
+
+RpcError = _reflection.GeneratedProtocolMessageType('RpcError', (_message.Message,), {
+  'DESCRIPTOR' : _RPCERROR,
+  '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
+  # @@protoc_insertion_point(class_scope:predictionmarkets.protobuf.RpcError)
+  })
+_sym_db.RegisterMessage(RpcError)
 
 Probability = _reflection.GeneratedProtocolMessageType('Probability', (_message.Message,), {
   'DESCRIPTOR' : _PROBABILITY,
@@ -665,12 +1158,48 @@ CfarMarket = _reflection.GeneratedProtocolMessageType('CfarMarket', (_message.Me
 _sym_db.RegisterMessage(CfarMarket)
 _sym_db.RegisterMessage(CfarMarket.EntityStakesEntry)
 
+GetPublicMarketsRequest = _reflection.GeneratedProtocolMessageType('GetPublicMarketsRequest', (_message.Message,), {
+  'DESCRIPTOR' : _GETPUBLICMARKETSREQUEST,
+  '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
+  # @@protoc_insertion_point(class_scope:predictionmarkets.protobuf.GetPublicMarketsRequest)
+  })
+_sym_db.RegisterMessage(GetPublicMarketsRequest)
+
+GetPublicMarketsResponseOrError = _reflection.GeneratedProtocolMessageType('GetPublicMarketsResponseOrError', (_message.Message,), {
+  'DESCRIPTOR' : _GETPUBLICMARKETSRESPONSEORERROR,
+  '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
+  # @@protoc_insertion_point(class_scope:predictionmarkets.protobuf.GetPublicMarketsResponseOrError)
+  })
+_sym_db.RegisterMessage(GetPublicMarketsResponseOrError)
+
+GetPublicMarketsResponse = _reflection.GeneratedProtocolMessageType('GetPublicMarketsResponse', (_message.Message,), {
+
+  'PublicMarketsEntry' : _reflection.GeneratedProtocolMessageType('PublicMarketsEntry', (_message.Message,), {
+    'DESCRIPTOR' : _GETPUBLICMARKETSRESPONSE_PUBLICMARKETSENTRY,
+    '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
+    # @@protoc_insertion_point(class_scope:predictionmarkets.protobuf.GetPublicMarketsResponse.PublicMarketsEntry)
+    })
+  ,
+  'DESCRIPTOR' : _GETPUBLICMARKETSRESPONSE,
+  '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
+  # @@protoc_insertion_point(class_scope:predictionmarkets.protobuf.GetPublicMarketsResponse)
+  })
+_sym_db.RegisterMessage(GetPublicMarketsResponse)
+_sym_db.RegisterMessage(GetPublicMarketsResponse.PublicMarketsEntry)
+
 CreateMarketRequest = _reflection.GeneratedProtocolMessageType('CreateMarketRequest', (_message.Message,), {
   'DESCRIPTOR' : _CREATEMARKETREQUEST,
   '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
   # @@protoc_insertion_point(class_scope:predictionmarkets.protobuf.CreateMarketRequest)
   })
 _sym_db.RegisterMessage(CreateMarketRequest)
+
+CreateMarketResponseOrError = _reflection.GeneratedProtocolMessageType('CreateMarketResponseOrError', (_message.Message,), {
+  'DESCRIPTOR' : _CREATEMARKETRESPONSEORERROR,
+  '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
+  # @@protoc_insertion_point(class_scope:predictionmarkets.protobuf.CreateMarketResponseOrError)
+  })
+_sym_db.RegisterMessage(CreateMarketResponseOrError)
 
 CreateMarketResponse = _reflection.GeneratedProtocolMessageType('CreateMarketResponse', (_message.Message,), {
   'DESCRIPTOR' : _CREATEMARKETRESPONSE,
@@ -686,6 +1215,13 @@ GetMarketRequest = _reflection.GeneratedProtocolMessageType('GetMarketRequest', 
   })
 _sym_db.RegisterMessage(GetMarketRequest)
 
+GetMarketResponseOrError = _reflection.GeneratedProtocolMessageType('GetMarketResponseOrError', (_message.Message,), {
+  'DESCRIPTOR' : _GETMARKETRESPONSEORERROR,
+  '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
+  # @@protoc_insertion_point(class_scope:predictionmarkets.protobuf.GetMarketResponseOrError)
+  })
+_sym_db.RegisterMessage(GetMarketResponseOrError)
+
 GetMarketResponse = _reflection.GeneratedProtocolMessageType('GetMarketResponse', (_message.Message,), {
   'DESCRIPTOR' : _GETMARKETRESPONSE,
   '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
@@ -699,6 +1235,13 @@ UpdateCfarMarketRequest = _reflection.GeneratedProtocolMessageType('UpdateCfarMa
   # @@protoc_insertion_point(class_scope:predictionmarkets.protobuf.UpdateCfarMarketRequest)
   })
 _sym_db.RegisterMessage(UpdateCfarMarketRequest)
+
+UpdateCfarMarketResponseOrError = _reflection.GeneratedProtocolMessageType('UpdateCfarMarketResponseOrError', (_message.Message,), {
+  'DESCRIPTOR' : _UPDATECFARMARKETRESPONSEORERROR,
+  '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
+  # @@protoc_insertion_point(class_scope:predictionmarkets.protobuf.UpdateCfarMarketResponseOrError)
+  })
+_sym_db.RegisterMessage(UpdateCfarMarketResponseOrError)
 
 UpdateCfarMarketResponse = _reflection.GeneratedProtocolMessageType('UpdateCfarMarketResponse', (_message.Message,), {
   'DESCRIPTOR' : _UPDATECFARMARKETRESPONSE,
@@ -714,6 +1257,13 @@ UsernamePasswordLoginRequest = _reflection.GeneratedProtocolMessageType('Usernam
   })
 _sym_db.RegisterMessage(UsernamePasswordLoginRequest)
 
+UsernamePasswordLoginResponseOrError = _reflection.GeneratedProtocolMessageType('UsernamePasswordLoginResponseOrError', (_message.Message,), {
+  'DESCRIPTOR' : _USERNAMEPASSWORDLOGINRESPONSEORERROR,
+  '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
+  # @@protoc_insertion_point(class_scope:predictionmarkets.protobuf.UsernamePasswordLoginResponseOrError)
+  })
+_sym_db.RegisterMessage(UsernamePasswordLoginResponseOrError)
+
 UsernamePasswordLoginResponse = _reflection.GeneratedProtocolMessageType('UsernamePasswordLoginResponse', (_message.Message,), {
   'DESCRIPTOR' : _USERNAMEPASSWORDLOGINRESPONSE,
   '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
@@ -727,6 +1277,13 @@ GetEntityForTokenRequest = _reflection.GeneratedProtocolMessageType('GetEntityFo
   # @@protoc_insertion_point(class_scope:predictionmarkets.protobuf.GetEntityForTokenRequest)
   })
 _sym_db.RegisterMessage(GetEntityForTokenRequest)
+
+GetEntityForTokenResponseOrError = _reflection.GeneratedProtocolMessageType('GetEntityForTokenResponseOrError', (_message.Message,), {
+  'DESCRIPTOR' : _GETENTITYFORTOKENRESPONSEORERROR,
+  '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
+  # @@protoc_insertion_point(class_scope:predictionmarkets.protobuf.GetEntityForTokenResponseOrError)
+  })
+_sym_db.RegisterMessage(GetEntityForTokenResponseOrError)
 
 GetEntityForTokenResponse = _reflection.GeneratedProtocolMessageType('GetEntityForTokenResponse', (_message.Message,), {
   'DESCRIPTOR' : _GETENTITYFORTOKENRESPONSE,
@@ -742,6 +1299,13 @@ DeleteTokenRequest = _reflection.GeneratedProtocolMessageType('DeleteTokenReques
   })
 _sym_db.RegisterMessage(DeleteTokenRequest)
 
+DeleteTokenResponseOrError = _reflection.GeneratedProtocolMessageType('DeleteTokenResponseOrError', (_message.Message,), {
+  'DESCRIPTOR' : _DELETETOKENRESPONSEORERROR,
+  '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
+  # @@protoc_insertion_point(class_scope:predictionmarkets.protobuf.DeleteTokenResponseOrError)
+  })
+_sym_db.RegisterMessage(DeleteTokenResponseOrError)
+
 DeleteTokenResponse = _reflection.GeneratedProtocolMessageType('DeleteTokenResponse', (_message.Message,), {
   'DESCRIPTOR' : _DELETETOKENRESPONSE,
   '__module__' : 'predictionmarkets.server.api.protobuf.service_pb2'
@@ -751,6 +1315,7 @@ _sym_db.RegisterMessage(DeleteTokenResponse)
 
 
 _CFARMARKET_ENTITYSTAKESENTRY._options = None
+_GETPUBLICMARKETSRESPONSE_PUBLICMARKETSENTRY._options = None
 
 _MARKETPLACE = _descriptor.ServiceDescriptor(
   name='Marketplace',
@@ -758,13 +1323,22 @@ _MARKETPLACE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=1390,
-  serialized_end=1757,
+  serialized_start=2890,
+  serialized_end=3386,
   methods=[
+  _descriptor.MethodDescriptor(
+    name='GetPublicMarkets',
+    full_name='predictionmarkets.protobuf.Marketplace.GetPublicMarkets',
+    index=0,
+    containing_service=None,
+    input_type=_GETPUBLICMARKETSREQUEST,
+    output_type=_GETPUBLICMARKETSRESPONSE,
+    serialized_options=None,
+  ),
   _descriptor.MethodDescriptor(
     name='CreateMarket',
     full_name='predictionmarkets.protobuf.Marketplace.CreateMarket',
-    index=0,
+    index=1,
     containing_service=None,
     input_type=_CREATEMARKETREQUEST,
     output_type=_CREATEMARKETRESPONSE,
@@ -773,7 +1347,7 @@ _MARKETPLACE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='GetMarket',
     full_name='predictionmarkets.protobuf.Marketplace.GetMarket',
-    index=1,
+    index=2,
     containing_service=None,
     input_type=_GETMARKETREQUEST,
     output_type=_GETMARKETRESPONSE,
@@ -782,7 +1356,7 @@ _MARKETPLACE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='UpdateCfarMarket',
     full_name='predictionmarkets.protobuf.Marketplace.UpdateCfarMarket',
-    index=2,
+    index=3,
     containing_service=None,
     input_type=_UPDATECFARMARKETREQUEST,
     output_type=_UPDATECFARMARKETRESPONSE,
@@ -800,8 +1374,8 @@ _ENTITY = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=1,
   serialized_options=None,
-  serialized_start=1760,
-  serialized_end=2160,
+  serialized_start=3389,
+  serialized_end=3789,
   methods=[
   _descriptor.MethodDescriptor(
     name='UsernamePasswordLogin',

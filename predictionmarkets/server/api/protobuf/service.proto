@@ -2,6 +2,11 @@ syntax = "proto3";
 
 package predictionmarkets.protobuf;
 
+message RpcError {
+    int32 http_status = 1;
+    string message_json = 2;
+}
+
 message Probability {
     double ln_odds = 1;
 }
@@ -20,6 +25,14 @@ message CfarMarket {
     map<string, Stakes> entity_stakes = 6;
 }
 
+message GetPublicMarketsRequest {
+}
+
+message GetPublicMarketsResponseOrError {oneof result { GetPublicMarketsResponse success = 1; RpcError error = 2; } }
+message GetPublicMarketsResponse {
+    map<string, CfarMarket> public_markets = 1;
+}
+
 message CreateMarketRequest {
     string name = 1;
     string proposition = 2;
@@ -28,6 +41,7 @@ message CreateMarketRequest {
     Probability initial_state = 5;
 }
 
+message CreateMarketResponseOrError {oneof result { CreateMarketResponse success = 1; RpcError error = 2; } }
 message CreateMarketResponse {
     string market_id = 1;
 }
@@ -36,6 +50,7 @@ message GetMarketRequest {
     string id = 1;
 }
 
+message GetMarketResponseOrError {oneof result { GetMarketResponse success = 1; RpcError error = 2; } }
 message GetMarketResponse {
     oneof market {
         CfarMarket cfar = 1;
@@ -48,10 +63,12 @@ message UpdateCfarMarketRequest {
     Probability new_state = 3;
 }
 
+message UpdateCfarMarketResponseOrError {oneof result { UpdateCfarMarketResponse success = 1; RpcError error = 2; } }
 message UpdateCfarMarketResponse {
 }
 
 service Marketplace {
+    rpc GetPublicMarkets(GetPublicMarketsRequest) returns (GetPublicMarketsResponse) {}
     rpc CreateMarket(CreateMarketRequest) returns (CreateMarketResponse) {}
     rpc GetMarket(GetMarketRequest) returns (GetMarketResponse) {}
     rpc UpdateCfarMarket(UpdateCfarMarketRequest) returns (UpdateCfarMarketResponse) {}
@@ -63,6 +80,7 @@ message UsernamePasswordLoginRequest {
     string password = 2;
 }
 
+message UsernamePasswordLoginResponseOrError {oneof result { UsernamePasswordLoginResponse success = 1; RpcError error = 2; } }
 message UsernamePasswordLoginResponse {
     string token = 1;
 }
@@ -71,6 +89,7 @@ message GetEntityForTokenRequest {
     string token = 1;
 }
 
+message GetEntityForTokenResponseOrError {oneof result { GetEntityForTokenResponse success = 1; RpcError error = 2; } }
 message GetEntityForTokenResponse {
     string entity_id = 1;
 }
@@ -79,6 +98,7 @@ message DeleteTokenRequest {
     string token = 1;
 }
 
+message DeleteTokenResponseOrError {oneof result { DeleteTokenResponse success = 1; RpcError error = 2; } }
 message DeleteTokenResponse {
 }
 
