@@ -3,7 +3,7 @@ An ill-considered web app for running prediction markets.
 Useful commands:
 
 - Test: `mypy . && pytest`
-- Run: `python -m predictionmarkets.server`
+- Run: `python -m predictionmarkets.server.plain_html` <!-- if changed, update ctrl-f "invocation-cmd" -->
 
 Todo:
 
