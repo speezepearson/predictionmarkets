@@ -107,6 +107,13 @@ class Server:
             session.token = None
             return None
 
+    def _render_kwargs(self, request: web.BaseRequest, current_entity: t.Optional[EntityId]) -> t.MutableMapping[str, t.Any]:
+        return dict(
+            current_entity=current_entity,
+            current_path=request.path,
+            petnames=self.petname_service.get_petnames(viewer=current_entity) if (current_entity is not None) else {},
+        )
+
     async def get_index(self, request: web.BaseRequest) -> web.StreamResponse:
         current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
         markets = self.market_service.get_public_markets()
@@ -114,9 +121,7 @@ class Server:
             status=200,
             body=self.jinja_env.get_template("index.jinja.html").render(
                 public_markets=markets,
-                current_entity=current_entity,
-                current_path=request.path,
-                petnames=self.petname_service.get_petnames(viewer=current_entity) if (current_entity is not None) else {},
+                **self._render_kwargs(request, current_entity),
             ),
             content_type="text/html",
         )
@@ -126,9 +131,7 @@ class Server:
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("create-market.jinja.html").render(
-                current_entity=current_entity,
-                current_path=request.path,
-                petnames=self.petname_service.get_petnames(viewer=current_entity) if (current_entity is not None) else {},
+                **self._render_kwargs(request, current_entity),
             ),
             content_type="text/html",
         )
@@ -167,9 +170,7 @@ class Server:
             body=self.jinja_env.get_template('view-market.jinja.html').render(
                 id=market_id,
                 market=market,
-                current_entity=current_entity,  # TODO: these three arguments get passed in a lot; can we refactor them out?
-                current_path=request.path,
-                petnames=self.petname_service.get_petnames(viewer=current_entity) if (current_entity is not None) else {},
+                **self._render_kwargs(request, current_entity),
             ),
             content_type="text/html",
         )
@@ -271,9 +272,7 @@ class Server:
             status=200,
             body=self.jinja_env.get_template("view-entity.jinja.html").render(
                 id=id,
-                current_entity=current_entity,
-                current_path=request.path,
-                petnames=self.petname_service.get_petnames(viewer=current_entity) if (current_entity is not None) else {},
+                **self._render_kwargs(request, current_entity),
             ),
             content_type="text/html",
         )
