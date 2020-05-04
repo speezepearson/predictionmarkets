@@ -8,33 +8,46 @@
 {% include 'topbar.jinja.html' %}
 
 <h1>{{market.name}}</h1>
-<p>{{market.proposition}}</p>
 
-<p>Market bounds: {{market.floor.ln_odds}} to {{market.ceiling.ln_odds}}</p>
+<ul>
+    <li><b>Proposition:</b> {{market.proposition}}</li>
+    <li><b>Market bounds:</b> {{market.floor.ln_odds}} to {{market.ceiling.ln_odds}}</li>
+    <li><b>Current state:</b> {{market.state.ln_odds}}</li>
+    <li><details>
+        <summary><b>Stakes:</b></summary>
+        {% if market.stakes %}
+        <table>
+            <tbody>
+                <tr>
+                    <th>Entity</th>
+                    <th>Winnings if yes</th>
+                    <th>Winnings if no</th>
+                </tr>
+                {% for participant, stakes in stakes.items() %}
+                <tr>
+                    <td>{{entity(participant)}}</td>
+                    <td>{{"%.2e" % stakes.if_resolves_yes}}</td>
+                    <td>{{"%.2e" % stakes.if_resolves_no}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        (no participants yet)
+        {% endif %}
+    </details></li>
 
-<p>Current state: {{market.state.ln_odds}}</p>
-
-<details>
-    <summary>Stakes</summary>
-    <table>
-        <tbody>
-            <tr> <th>Entity</th> <th>Winnings if yes</th> <th>Winnings if no</th> </tr>
-            {% for participant, stakes in market.stakes.items() %}
-            <tr> <td>{{entity(participant)}}</td> <td>{{stakes.if_resolves_yes}}</td> <td>{{stakes.if_resolves_no}}</td> </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</details>
-
-{% if current_entity %}
-<p>Set state?</p>
-<form action="{{resources.market_path(market_id)}}" method="post">
-    <div>New state: <input type="number" min="{{market.floor.ln_odds}}" value="{{market.state.ln_odds}}" max="{{market.ceiling.ln_odds}}" step="any" name="state" /></div>
-    <div><input type="submit" value="Bet!" /></div>
-</form>
-{% else %}
-<p>(Log in to participate!)</p>
-{% endif %}
+    <li>
+        <b>Set state:</b>
+        <form action="{{resources.market_path(market_id)}}" method="post">
+            <div>New state: <input type="number" min="{{market.floor.ln_odds}}" value="{{market.state.ln_odds}}" max="{{market.ceiling.ln_odds}}" step="any" name="state" /></div>
+            {% if current_entity %}
+            <div><input type="submit" value="Bet!" /></div>
+            {% else %}
+            <div><input type="submit" value="Log in to bet!" disabled /></div>
+            {% endif %}
+        </form>
+    </li>
 
 </body>
 </html>
