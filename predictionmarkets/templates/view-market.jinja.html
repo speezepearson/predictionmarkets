@@ -20,14 +20,14 @@
             <tbody>
                 <tr>
                     <th>Entity</th>
-                    <th>Winnings if yes</th>
-                    <th>Winnings if no</th>
+                    <th>ln-winnings if yes</th>
+                    <th>ln-winnings if no</th>
                 </tr>
                 {% for participant, stakes in stakes.items() %}
                 <tr>
                     <td>{{entity(participant)}}</td>
-                    <td>{{"%.2e" % stakes.if_resolves_yes}}</td>
-                    <td>{{"%.2e" % stakes.if_resolves_no}}</td>
+                    <td>{{stakes.ln_winnings_if_yes | round(2)}}</td>
+                    <td>{{stakes.ln_winnings_if_no | round(2)}}</td>
                 </tr>
                 {% endfor %}
             </tbody>

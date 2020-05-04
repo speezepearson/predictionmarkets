@@ -170,7 +170,7 @@ class Server:
             body=self.jinja_env.get_template('view-market.jinja.html').render(
                 market_id=market_id,
                 market=market,
-                stakes=dict(sorted(market.stakes.items(), key=lambda kv: max(kv[1].if_resolves_yes, kv[1].if_resolves_no), reverse=True)),
+                stakes=dict(sorted(market.stakes.items(), key=lambda kv: max(kv[1].ln_winnings_if_yes, kv[1].ln_winnings_if_no), reverse=True)),
                 **self._render_kwargs(request, current_entity),
             ),
             content_type="text/html",

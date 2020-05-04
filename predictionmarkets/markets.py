@@ -8,8 +8,16 @@ from .probabilities import Probability
 
 @dataclasses.dataclass(frozen=True)
 class Stakes:
-    if_resolves_yes: float
-    if_resolves_no: float
+    ln_winnings_if_yes: float
+    ln_winnings_if_no: float
+
+    @property
+    def winnings_if_yes(self) -> float:
+        return math.exp(self.ln_winnings_if_yes)
+
+    @property
+    def winnings_if_no(self) -> float:
+        return math.exp(self.ln_winnings_if_no)
 
 @dataclasses.dataclass
 class CfarMarket:
@@ -28,8 +36,8 @@ class CfarMarket:
         p = float(new_state)
         stakes = dataclasses.replace(
             stakes,
-            if_resolves_yes=stakes.if_resolves_yes + math.log(p/p0),
-            if_resolves_no=stakes.if_resolves_no + math.log((1-p)/(1-p0)),
+            ln_winnings_if_yes=stakes.ln_winnings_if_yes + p/p0,
+            ln_winnings_if_no=stakes.ln_winnings_if_no + (1-p)/(1-p0),
         )
         self.state, self.stakes[participant] = new_state, stakes
 
