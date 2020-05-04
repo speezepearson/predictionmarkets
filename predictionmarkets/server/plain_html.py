@@ -168,7 +168,7 @@ class Server:
         return web.Response(
             status=200,
             body=self.jinja_env.get_template('view-market.jinja.html').render(
-                id=market_id,
+                market_id=market_id,
                 market=market,
                 **self._render_kwargs(request, current_entity),
             ),
@@ -267,11 +267,11 @@ class Server:
 
     async def get_entity(self, request: web.Request) -> web.StreamResponse:
         current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
-        id = request.match_info["id"]
+        entity_id = request.match_info["id"]
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("view-entity.jinja.html").render(
-                id=id,
+                entity_id=entity_id,
                 **self._render_kwargs(request, current_entity),
             ),
             content_type="text/html",

@@ -2,14 +2,14 @@
 
 <html>
 <head>
-    <title>Entity: {{entity_text(id)}}</title>
+    <title>Entity: {{entity_text(entity_id)}}</title>
 </head>
 <body>
 {% include 'topbar.jinja.html' %}
 
-<h1>{{entity(id)}}</h1>
-{% if petnames.get(current_entity, id) %}
-    <p>a.k.a. {{id}}</p>
+<h1>{{entity(entity_id)}}</h1>
+{% if petnames.get(current_entity, entity_id) %}
+    <p>a.k.a. {{entity_id}}</p>
 {% endif %}
 
 {% if current_entity %}
