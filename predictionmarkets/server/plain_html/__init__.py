@@ -10,7 +10,14 @@ import typing as t
 
 from aiohttp import web
 import aiohttp_session  # type: ignore
-from plauth import TokenAuthenticator, UsernamePasswordAuthenticator, Token, Username, Password, EntityId
+from plauth.authenticator import (
+    TokenAuthenticator,
+    UsernamePasswordAuthenticator,
+    Token,
+    Username,
+    Password,
+    EntityId,
+)
 
 from ... import Probability, CfarMarket, Marketplace, MarketId
 from ...words import random_words

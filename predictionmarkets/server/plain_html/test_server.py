@@ -8,7 +8,7 @@ import bs4  # type: ignore
 import pytest  # type: ignore
 import aiohttp_session  # type: ignore
 
-from plauth import UsernamePasswordAuthenticator, TokenAuthenticator, EntityId
+from plauth.authenticator import UsernamePasswordAuthenticator, TokenAuthenticator, EntityId
 
 from predictionmarkets import Marketplace
 from predictionmarkets.server.plain_html import Server, Resources

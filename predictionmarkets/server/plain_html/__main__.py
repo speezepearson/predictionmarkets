@@ -4,7 +4,7 @@ import random
 from aiohttp import web
 import aiohttp_session  # type: ignore
 
-from plauth import TokenAuthenticator, UsernamePasswordAuthenticator, EntityId
+from plauth.authenticator import TokenAuthenticator, UsernamePasswordAuthenticator, EntityId
 
 from ... import Probability, CfarMarket, Marketplace, MarketId
 from ..api.marketplace import MarketplaceService  # type: ignore
