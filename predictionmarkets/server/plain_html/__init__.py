@@ -12,11 +12,11 @@ from aiohttp import web
 import aiohttp_session  # type: ignore
 import plauth  # type: ignore
 
-from .. import Probability, CfarMarket, Marketplace, MarketId
-from ..words import random_words
-from .api.marketplace import MarketplaceService  # type: ignore
-from .api.entity import EntityService, Token, EntityId, Username  # type: ignore
-from .api.petname import Petname, PetnameService
+from ... import Probability, CfarMarket, Marketplace, MarketId
+from ...words import random_words
+from ..api.marketplace import MarketplaceService  # type: ignore
+from ..api.entity import EntityService, Token, EntityId, Username  # type: ignore
+from ..api.petname import Petname, PetnameService
 
 import jinja2
 
@@ -41,7 +41,7 @@ class Session:
         else:
             self._aio_session[Session._TOKEN_KEY] = value
 
-class MarketResources:
+class Resources:
     def __init__(self, router: web.UrlDispatcher) -> None:
         self.index = router.add_resource(name="index", path="/")
         self.market = router.add_resource(name="market", path="/market/{id}")
@@ -73,14 +73,14 @@ class Server:
         entity_service: EntityService,
         market_service: MarketplaceService,
         petname_service: PetnameService,
-        resources: MarketResources,
+        resources: Resources,
     ) -> None:
         self.entity_service = entity_service
         self.market_service = market_service
         self.petname_service = petname_service
         self.resources = resources
         self.jinja_env = jinja2.Environment(
-            loader=jinja2.PackageLoader("predictionmarkets", "templates"),
+            loader=jinja2.FileSystemLoader(Path(__file__).parent / "templates"),
             autoescape=jinja2.select_autoescape(["html", "xml"]),
             # TODO: undefined=StrictUndefined or something like that
         )
@@ -277,33 +277,3 @@ class Server:
             ),
             content_type="text/html",
         )
-
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument("-p", "--port", type=int, default=8080)
-parser.add_argument("-H", "--host", default="localhost")
-parser.add_argument("--random-seed", type=int, default=None)
-
-if __name__ == "__main__":
-    args = parser.parse_args()
-
-    rng = random.Random()
-    if args.random_seed is not None:
-        rng.seed(args.random_seed)
-    marketplace = Marketplace(rng=rng)
-
-    entity_service = EntityService(rng=rng)
-    market_service = MarketplaceService(marketplace=marketplace)
-
-    app = web.Application()
-    aiohttp_session.setup(app, aiohttp_session.SimpleCookieStorage())
-    html_server = Server(
-        entity_service=entity_service,
-        market_service=market_service,
-        petname_service=PetnameService(),
-        resources=MarketResources(app.router),
-    )
-    html_server.add_handlers()
-
-    web.run_app(app, host=args.host, port=args.port)
