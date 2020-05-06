@@ -8,12 +8,19 @@
 <h1>New Market</h1>
 
 <form action="{{ resources.create_market_path() }}" method="post">
-    <div>Name: <input type="text" name="name"></div>
-    <div>Proposition: <input type="text" name="proposition"></div>
-    <div>Floor: <input type="text" name="floor"></div>
-    <div>Ceiling: <input type="text" name="ceiling"></div>
-    <div>State: <input type="text" name="state"></div>
-    <div><input type="submit" value="Submit"></div>
+    <ul>
+        <li><b>Name:</b> <input type="text" name="name" style="width: 30em"/></li>
+        <li>
+            <b>Proposition:</b><br />
+            <textarea name="proposition"
+                style="font-family: sans-serif; padding: 0.5em; height: 10em; width: 50em;">
+            </textarea>
+        </li>
+        <li><b>Floor:</b> <input type="text" name="floor" /></li>
+        <li><b>Ceiling:</b> <input type="text" name="ceiling" /></li>
+        <li><b>State:</b> <input type="text" name="state" /></li>
+        <li><input type="submit" value="Submit" /></li>
+    </ul>
 </form>
 
 </body>
