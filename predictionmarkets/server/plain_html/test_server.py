@@ -11,9 +11,8 @@ import aiohttp_session  # type: ignore
 from plauth.authenticator import UsernamePasswordAuthenticator, TokenAuthenticator, EntityId
 
 from predictionmarkets import Marketplace
+from predictionmarkets.petnames import PetnameRegistry
 from predictionmarkets.server.plain_html import Server, Resources
-from predictionmarkets.server.api.marketplace import MarketplaceService
-from predictionmarkets.server.api.petname import PetnameService
 
 @pytest.fixture
 async def client(aiohttp_client):
@@ -26,8 +25,8 @@ async def client(aiohttp_client):
             (EntityId(str(n)) for n in range(int(1e9))).__next__,
             token_auth,
         ),
-        market_service=MarketplaceService(Marketplace()),
-        petname_service=PetnameService(),
+        marketplace=Marketplace(),
+        petname_registry=PetnameRegistry(),
         resources=Resources(app.router),
     ).add_handlers()
     yield await aiohttp_client(app)

@@ -7,8 +7,8 @@ import aiohttp_session  # type: ignore
 from plauth.authenticator import TokenAuthenticator, UsernamePasswordAuthenticator, EntityId
 
 from ... import Probability, CfarMarket, Marketplace, MarketId
-from ..api.marketplace import MarketplaceService  # type: ignore
-from ..api.petname import Petname, PetnameService
+from ...marketplace import Marketplace
+from ...petnames import Petname, PetnameRegistry
 from . import Server, Resources
 from ...words import random_words
 
@@ -22,7 +22,6 @@ args = parser.parse_args()
 rng = random.Random()
 if args.random_seed is not None:
     rng.seed(args.random_seed)
-marketplace = Marketplace(rng=rng)
 
 token_auth = TokenAuthenticator()
 
@@ -34,8 +33,8 @@ html_server = Server(
         make_random_entity_id=(lambda: EntityId("-".join(random_words(4)))),
         token_authenticator=token_auth,
     ),
-    market_service=MarketplaceService(marketplace=marketplace),
-    petname_service=PetnameService(),
+    marketplace=Marketplace(rng=rng),
+    petname_registry=PetnameRegistry(),
     resources=Resources(app.router),
 )
 html_server.add_handlers()

@@ -21,8 +21,7 @@ from plauth.authenticator import (
 
 from ... import Probability, CfarMarket, Marketplace, MarketId
 from ...words import random_words
-from ..api.marketplace import MarketplaceService  # type: ignore
-from ..api.petname import Petname, PetnameService
+from ...petnames import Petname, PetnameRegistry
 
 import jinja2
 
@@ -78,14 +77,14 @@ class Server:
         self,
         token_auth: TokenAuthenticator,
         username_password_auth: UsernamePasswordAuthenticator,
-        market_service: MarketplaceService,
-        petname_service: PetnameService,
+        marketplace: Marketplace,
+        petname_registry: PetnameRegistry,
         resources: Resources,
     ) -> None:
         self.token_auth = token_auth
         self.username_password_auth = username_password_auth
-        self.market_service = market_service
-        self.petname_service = petname_service
+        self.marketplace = marketplace
+        self.petname_registry = petname_registry
         self.resources = resources
         self.jinja_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(Path(__file__).parent / "templates"),
@@ -119,12 +118,12 @@ class Server:
         return dict(
             current_entity=current_entity,
             current_path=request.path,
-            petnames=self.petname_service.get_petnames(viewer=current_entity) if (current_entity is not None) else {},
+            petnames=self.petname_registry.get_petnames(viewer=current_entity) if (current_entity is not None) else {},
         )
 
     async def get_index(self, request: web.BaseRequest) -> web.StreamResponse:
         current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
-        markets = self.market_service.get_public_markets()
+        markets = self.marketplace.get_public_markets()
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("index.jinja.html").render(
@@ -148,7 +147,7 @@ class Server:
         current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
         post_data = await request.post()
         try:
-            market_id = self.market_service.create_market(CfarMarket(
+            market_id = self.marketplace.register_market(CfarMarket(
                 name=str(post_data["name"]),
                 proposition=str(post_data["proposition"]),
                 floor=Probability(ln_odds=float(str(post_data["floor"]))),
@@ -170,7 +169,7 @@ class Server:
         current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
         market_id = MarketId(str(request.match_info["id"]))
         try:
-            market = self.market_service.get_market(market_id=market_id)
+            market = self.marketplace.get_market(market_id=market_id)
         except KeyError:
             return web.HTTPNotFound()
         return web.Response(
@@ -191,7 +190,7 @@ class Server:
         post_data = await request.post()
         market_id = MarketId(str(request.match_info["id"]))
         try:
-            self.market_service.update_cfar_market(
+            self.marketplace.update_market(
                 market_id=market_id,
                 participant_id=current_entity,
                 new_state=Probability(ln_odds=float(str(post_data["state"]))),
@@ -263,7 +262,7 @@ class Server:
         except KeyError as e:
             return web.HTTPBadRequest(reason=str(e))
 
-        self.petname_service.add_petname(current_entity, object_id, petname)
+        self.petname_registry.add_petname(current_entity, object_id, petname)
 
         return web.Response(
             status=200,

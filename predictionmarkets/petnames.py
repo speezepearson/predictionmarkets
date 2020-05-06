@@ -1,11 +1,10 @@
-import json
 import typing as t
 
 from plauth.authenticator import EntityId
 
 Petname = t.NewType("Petname", str)
 
-class PetnameService:
+class PetnameRegistry:
     def __init__(self):
         self.viewer_to_viewed_to_name: t.MutableMapping[t.EntityId, t.MutableMapping[EntityId, Petname]] = {}
 
