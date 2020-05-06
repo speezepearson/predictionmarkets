@@ -1,7 +1,7 @@
 import json
 import typing as t
 
-from .authenticator import EntityId
+from plauth import EntityId
 
 from ...marketplace import Marketplace, MarketId
 from ...markets import CfarMarket

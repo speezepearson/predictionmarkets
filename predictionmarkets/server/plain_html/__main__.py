@@ -4,11 +4,13 @@ import random
 from aiohttp import web
 import aiohttp_session  # type: ignore
 
+from plauth import TokenAuthenticator, UsernamePasswordAuthenticator, EntityId
+
 from ... import Probability, CfarMarket, Marketplace, MarketId
 from ..api.marketplace import MarketplaceService  # type: ignore
-from ..api.authenticator import AuthenticatorService, Token, EntityId, Username  # type: ignore
 from ..api.petname import Petname, PetnameService
 from . import Server, Resources
+from ...words import random_words
 
 
 parser = argparse.ArgumentParser()
@@ -22,14 +24,17 @@ if args.random_seed is not None:
     rng.seed(args.random_seed)
 marketplace = Marketplace(rng=rng)
 
-entity_service = AuthenticatorService(rng=rng)
-market_service = MarketplaceService(marketplace=marketplace)
+token_auth = TokenAuthenticator()
 
 app = web.Application()
 aiohttp_session.setup(app, aiohttp_session.SimpleCookieStorage())
 html_server = Server(
-    entity_service=entity_service,
-    market_service=market_service,
+    token_auth=token_auth,
+    username_password_auth=UsernamePasswordAuthenticator(
+        make_random_entity_id=(lambda: EntityId("-".join(random_words(4)))),
+        token_authenticator=token_auth,
+    ),
+    market_service=MarketplaceService(marketplace=marketplace),
     petname_service=PetnameService(),
     resources=Resources(app.router),
 )

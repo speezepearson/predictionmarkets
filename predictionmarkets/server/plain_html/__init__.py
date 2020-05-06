@@ -10,12 +10,11 @@ import typing as t
 
 from aiohttp import web
 import aiohttp_session  # type: ignore
-import plauth  # type: ignore
+from plauth import TokenAuthenticator, UsernamePasswordAuthenticator, Token, Username, Password, EntityId
 
 from ... import Probability, CfarMarket, Marketplace, MarketId
 from ...words import random_words
 from ..api.marketplace import MarketplaceService  # type: ignore
-from ..api.authenticator import AuthenticatorService, Token, EntityId, Username  # type: ignore
 from ..api.petname import Petname, PetnameService
 
 import jinja2
@@ -70,12 +69,14 @@ class Resources:
 class Server:
     def __init__(
         self,
-        entity_service: AuthenticatorService,
+        token_auth: TokenAuthenticator,
+        username_password_auth: UsernamePasswordAuthenticator,
         market_service: MarketplaceService,
         petname_service: PetnameService,
         resources: Resources,
     ) -> None:
-        self.entity_service = entity_service
+        self.token_auth = token_auth
+        self.username_password_auth = username_password_auth
         self.market_service = market_service
         self.petname_service = petname_service
         self.resources = resources
@@ -102,7 +103,7 @@ class Server:
         if session.token is None:
             return None
         try:
-            return self.entity_service.get_entity_for_token(session.token)
+            return self.token_auth.get_entity_for_token(session.token)
         except KeyError:
             session.token = None
             return None
@@ -207,11 +208,11 @@ class Server:
         post_data = await request.post()
         try:
             username = Username(str(post_data["username"]))
-            password = str(post_data["password"])
+            password = Password(str(post_data["password"]))
             redirect_to = str(post_data["redirectTo"])
         except KeyError as e:
             return web.HTTPBadRequest(reason=str(e))
-        session.token = self.entity_service.username_password_login(
+        session.token = self.username_password_auth.login(
             username=username,
             password=password,
         )
@@ -230,7 +231,7 @@ class Server:
         post_data = await request.post()
         redirect_to = str(post_data["redirectTo"])
         if session.token is not None:
-            self.entity_service.expire_token(session.token)
+            self.token_auth.expire_token(session.token)
             session.token = None
 
         return web.Response(
@@ -249,13 +250,13 @@ class Server:
 
         post_data = await request.post()
         try:
-            entity_id = EntityId(str(post_data["entityId"]))
+            object_id = EntityId(str(post_data["object"]))
             petname = Petname(str(post_data["petname"]))
             redirect_to = str(post_data["redirectTo"])
         except KeyError as e:
             return web.HTTPBadRequest(reason=str(e))
 
-        self.petname_service.add_petname(current_entity, entity_id, petname)
+        self.petname_service.add_petname(current_entity, object_id, petname)
 
         return web.Response(
             status=200,
@@ -268,11 +269,11 @@ class Server:
 
     async def get_entity(self, request: web.Request) -> web.StreamResponse:
         current_entity = self._get_entity(Session(await aiohttp_session.get_session(request)))
-        entity_id = request.match_info["id"]
+        viewed_entity_id = request.match_info["id"]
         return web.Response(
             status=200,
             body=self.jinja_env.get_template("view-entity.jinja.html").render(
-                entity_id=entity_id,
+                viewed_entity_id=viewed_entity_id,
                 **self._render_kwargs(request, current_entity),
             ),
             content_type="text/html",

@@ -1,7 +1,7 @@
 import json
 import typing as t
 
-from .authenticator import EntityId
+from plauth import EntityId
 
 Petname = t.NewType("Petname", str)
 

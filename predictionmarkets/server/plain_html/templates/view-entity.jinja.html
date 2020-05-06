@@ -2,21 +2,21 @@
 
 <html>
 <head>
-    <title>Entity: {{entity_text(entity_id)}}</title>
+    <title>Entity: {{entity_text(viewed_entity_id)}}</title>
 </head>
 <body>
 {% include 'topbar.jinja.html' %}
 
-<h1>{{entity(entity_id)}}</h1>
-{% if petnames.get(current_entity, entity_id) %}
-    <p>a.k.a. {{entity_id}}</p>
+<h1>{{entity(viewed_entity_id)}}</h1>
+{% if petnames.get(current_entity, viewed_entity_id) %}
+    <p>a.k.a. {{viewed_entity_id}}</p>
 {% endif %}
 
 {% if current_entity %}
 <div>
     <form action="{{resources.petname_path()}}" method="post">
         <input type="text" placeholder="petname" name="petname" />
-        <input type="hidden" name="entityId" value="{{id}}" />
+        <input type="hidden" name="object" value="{{viewed_entity_id}}" />
         <input type="hidden" name="redirectTo" value="{{current_path}}" />
         <input type="submit" value="Add petname" />
     </form>

@@ -8,9 +8,10 @@ import bs4  # type: ignore
 import pytest  # type: ignore
 import aiohttp_session  # type: ignore
 
+from plauth import UsernamePasswordAuthenticator, TokenAuthenticator, EntityId
+
 from predictionmarkets import Marketplace
 from predictionmarkets.server.plain_html import Server, Resources
-from predictionmarkets.server.api.authenticator import AuthenticatorService
 from predictionmarkets.server.api.marketplace import MarketplaceService
 from predictionmarkets.server.api.petname import PetnameService
 
@@ -18,8 +19,13 @@ from predictionmarkets.server.api.petname import PetnameService
 async def client(aiohttp_client):
     app = web.Application()
     aiohttp_session.setup(app, aiohttp_session.SimpleCookieStorage())
+    token_auth = TokenAuthenticator()
     Server(
-        entity_service=AuthenticatorService(),
+        token_auth=token_auth,
+        username_password_auth=UsernamePasswordAuthenticator(
+            (EntityId(str(n)) for n in range(int(1e9))).__next__,
+            token_auth,
+        ),
         market_service=MarketplaceService(Marketplace()),
         petname_service=PetnameService(),
         resources=Resources(app.router),
