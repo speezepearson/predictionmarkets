@@ -13,7 +13,7 @@ Username = t.NewType("Username", str)
 EntityId = t.NewType("EntityId", str)
 Token = t.NewType("Token", str)
 
-class EntityService:
+class AuthenticatorService:
     def __init__(self, rng: t.Optional[random.Random] = None) -> None:
         self.rng = rng if (rng is not None) else random.Random()
         self.bcrypt_entities: t.MutableMapping[EntityId, plauth.AnybodyWithThisBcryptInverse] = {}

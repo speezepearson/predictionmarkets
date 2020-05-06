@@ -10,7 +10,7 @@ import aiohttp_session  # type: ignore
 
 from predictionmarkets import Marketplace
 from predictionmarkets.server.plain_html import Server, Resources
-from predictionmarkets.server.api.entity import EntityService
+from predictionmarkets.server.api.authenticator import AuthenticatorService
 from predictionmarkets.server.api.marketplace import MarketplaceService
 from predictionmarkets.server.api.petname import PetnameService
 
@@ -19,7 +19,7 @@ async def client(aiohttp_client):
     app = web.Application()
     aiohttp_session.setup(app, aiohttp_session.SimpleCookieStorage())
     Server(
-        entity_service=EntityService(),
+        entity_service=AuthenticatorService(),
         market_service=MarketplaceService(Marketplace()),
         petname_service=PetnameService(),
         resources=Resources(app.router),

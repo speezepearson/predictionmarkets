@@ -6,7 +6,7 @@ import aiohttp_session  # type: ignore
 
 from ... import Probability, CfarMarket, Marketplace, MarketId
 from ..api.marketplace import MarketplaceService  # type: ignore
-from ..api.entity import EntityService, Token, EntityId, Username  # type: ignore
+from ..api.authenticator import AuthenticatorService, Token, EntityId, Username  # type: ignore
 from ..api.petname import Petname, PetnameService
 from . import Server, Resources
 
@@ -22,7 +22,7 @@ if args.random_seed is not None:
     rng.seed(args.random_seed)
 marketplace = Marketplace(rng=rng)
 
-entity_service = EntityService(rng=rng)
+entity_service = AuthenticatorService(rng=rng)
 market_service = MarketplaceService(marketplace=marketplace)
 
 app = web.Application()

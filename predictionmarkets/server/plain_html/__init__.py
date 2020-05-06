@@ -15,7 +15,7 @@ import plauth  # type: ignore
 from ... import Probability, CfarMarket, Marketplace, MarketId
 from ...words import random_words
 from ..api.marketplace import MarketplaceService  # type: ignore
-from ..api.entity import EntityService, Token, EntityId, Username  # type: ignore
+from ..api.authenticator import AuthenticatorService, Token, EntityId, Username  # type: ignore
 from ..api.petname import Petname, PetnameService
 
 import jinja2
@@ -70,7 +70,7 @@ class Resources:
 class Server:
     def __init__(
         self,
-        entity_service: EntityService,
+        entity_service: AuthenticatorService,
         market_service: MarketplaceService,
         petname_service: PetnameService,
         resources: Resources,
