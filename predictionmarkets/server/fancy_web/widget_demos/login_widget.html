@@ -1,0 +1,19 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Main</title>
+  <script src="/static/LoginWidget.js"></script>
+</head>
+
+<body>
+  <div id="main"></div>
+  <script>
+  var app = Elm.LoginWidget.init({
+    node: document.getElementById('main'),
+    flags: {entityId: null},
+  });
+  app.ports.loggedIn.subscribe((entityId) => console.log("logged in as", entityId));
+  app.ports.loggedOut.subscribe(() => console.log("logged out"));
+  </script>
+</body>
+</html>

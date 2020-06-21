@@ -15,11 +15,11 @@ type alias Password = String
 type alias EntityId = String
 
 type alias Flags =
-    { entity : Maybe EntityId
+    { entityId : Maybe EntityId
     }
 
 type alias Model =
-    { entity : Maybe EntityId
+    { entityId : Maybe EntityId
     , pendingRequest : Bool
     , usernameField : Username
     , passwordField : Password
@@ -48,7 +48,7 @@ main =
 
 init : Flags -> ( Model , Cmd Msg )
 init flags =
-    ( { entity = flags.entity
+    ( { entityId = flags.entityId
       , pendingRequest = False
       , usernameField = ""
       , passwordField = ""
@@ -89,7 +89,7 @@ update msg model =
 
         LoginRequestCompleted (Ok {entityId}) ->
             ( { model
-              | entity = Just entityId
+              | entityId = Just entityId
               , pendingRequest = False
               , error = Nothing
               , usernameField = ""
@@ -104,13 +104,13 @@ update msg model =
                     , Cmd.none
                     )
                 Ok {} ->
-                    ( { model | entity=Nothing, pendingRequest=False, error=Nothing }
+                    ( { model | entityId=Nothing, pendingRequest=False, error=Nothing }
                     , loggedOut ()
                     )
 
 view : Model -> Html Msg
 view model =
-    case model.entity of
+    case model.entityId of
         Nothing ->
             div []
                 [ input
@@ -141,17 +141,17 @@ view model =
                     Just errText -> div [] [span [style "color" "red"] [text errText]]
                     Nothing -> text ""
                 ]
-        Just entity ->
+        Just entityId ->
             div []
                 [ text "Logged in as "
-                , viewEntity entity
+                , viewEntity entityId
                 , text " "
                 , button [onClick SendLogoutRequest] [text "Log out"]
                 ]
 
 viewEntity : EntityId -> Html Msg
-viewEntity entity =
-    a [href ("/entity/" ++ entity)] [text entity]
+viewEntity entityId =
+    a [href ("/entityId/" ++ entityId)] [text entityId]
 
 onEnter : Msg -> Attribute Msg
 onEnter msg =
