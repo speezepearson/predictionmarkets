@@ -1,16 +1,22 @@
-module LoginWidget exposing (main)
+port module LoginWidget exposing (main)
 
 import Browser
 import Html exposing (Html, Attribute, text, button, div, input, span, a)
 import Html.Attributes exposing (placeholder, value, disabled, style, href, type_)
 import Html.Events exposing (keyCode, on, onClick, onInput)
 import Http
-import Json.Decode as D
-import Json.Encode as E
+
+import Json.Decode
+
+import Endpoints
 
 type alias Username = String
 type alias Password = String
 type alias EntityId = String
+
+type alias Flags =
+    { entity : Maybe EntityId
+    }
 
 type alias Model =
     { entity : Maybe EntityId
@@ -23,11 +29,14 @@ type alias Model =
 type Msg
     = SendLoginRequest
     | SendLogoutRequest
-    | LoginRequestCompleted (Result Http.Error {entity : EntityId})
-    | LogoutRequestCompleted (Result Http.Error ())
+    | LoginRequestCompleted (Result Http.Error {entityId : EntityId})
+    | LogoutRequestCompleted (Result Http.Error {})
     | SetUsername Username
     | SetPassword Password
     | Ignore
+
+port loggedIn : EntityId -> Cmd msg
+port loggedOut : () -> Cmd msg
 
 main =
     Browser.element
@@ -37,9 +46,9 @@ main =
         , subscriptions = always Sub.none
         }
 
-init : () -> ( Model , Cmd Msg )
-init () =
-    ( { entity = Nothing
+init : Flags -> ( Model , Cmd Msg )
+init flags =
+    ( { entity = flags.entity
       , pendingRequest = False
       , usernameField = ""
       , passwordField = ""
@@ -55,55 +64,49 @@ update msg model =
         SetUsername username -> ( {model | usernameField=username}, Cmd.none )
         SetPassword password -> ( {model | passwordField=password}, Cmd.none )
         SendLoginRequest ->
-            if model.pendingRequest
-                then ( Debug.log "ignoring command to send login request" model , Cmd.none )
-                else ( {model | pendingRequest=True, error=Nothing} , sendLoginRequest model.usernameField model.passwordField)
+            if model.pendingRequest then
+                ( Debug.log "ignoring command to send login request" model
+                , Cmd.none
+                )
+            else
+                ( { model | pendingRequest=True, error=Nothing }
+                , Endpoints.usernameLogIn LoginRequestCompleted {username=model.usernameField, password=model.passwordField}
+                )
         SendLogoutRequest ->
-            if model.pendingRequest
-                then ( Debug.log "ignoring command to send logout request" model , Cmd.none )
-                else ( {model | pendingRequest=True, error=Nothing} , sendLogoutRequest)
-        LoginRequestCompleted result ->
-            case result of
-                Err e -> Debug.log (Debug.toString e)
-                    ( {model | pendingRequest=False, error=Just (Debug.toString e)}
-                    , Cmd.none
-                    )
-                Ok {entity} ->
-                    ( { model
-                      | entity = Just entity
-                      , pendingRequest = False
-                      , error = Nothing
-                      , usernameField = ""
-                      , passwordField = ""
-                      }
-                    , Cmd.none
-                    )
+            if model.pendingRequest then
+                ( Debug.log "ignoring command to send logout request" model
+                , Cmd.none
+                )
+            else
+                ( { model | pendingRequest=True, error=Nothing }
+                , Endpoints.logOut LogoutRequestCompleted {}
+                )
+        LoginRequestCompleted (Err e) ->
+            ( {model | pendingRequest=False, error=Just (Debug.toString e)}
+            , Cmd.none
+            )
+            |> Debug.log (Debug.toString e)
+
+        LoginRequestCompleted (Ok {entityId}) ->
+            ( { model
+              | entity = Just entityId
+              , pendingRequest = False
+              , error = Nothing
+              , usernameField = ""
+              , passwordField = ""
+              }
+            , loggedIn entityId
+            )
         LogoutRequestCompleted result ->
             case result of
                 Err e -> Debug.log (Debug.toString e)
                     ( {model | pendingRequest=False, error=Just (Debug.toString e)}
                     , Cmd.none
                     )
-                Ok () ->
+                Ok {} ->
                     ( { model | entity=Nothing, pendingRequest=False, error=Nothing }
-                    , Cmd.none
+                    , loggedOut ()
                     )
-
-sendLoginRequest : Username -> Password -> Cmd Msg
-sendLoginRequest username password =
-    Http.post
-        { url = "/api/v1/username_login"
-        , body = Http.jsonBody <| E.object [("username", E.string username), ("password", E.string password)]
-        , expect = Http.expectJson LoginRequestCompleted (D.map (\s -> {entity=s}) <| D.field "entityId" D.string)
-        }
-
-sendLogoutRequest : Cmd Msg
-sendLogoutRequest =
-    Http.post
-        { url = "/api/v1/logout"
-        , body = Http.jsonBody <| E.object []
-        , expect = Http.expectJson LogoutRequestCompleted (D.succeed ())
-        }
 
 view : Model -> Html Msg
 view model =
@@ -152,4 +155,4 @@ viewEntity entity =
 
 onEnter : Msg -> Attribute Msg
 onEnter msg =
-    on "keydown" (D.map (\n -> if n == 13 then msg else Ignore) keyCode)
+    on "keydown" (Json.Decode.map (\n -> if n == 13 then msg else Ignore) keyCode)

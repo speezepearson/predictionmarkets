@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package predictionmarkets.lsmr;
+
+message State {
+    map<string, string> obligations = 1;
+}
+message DeltaState {
+    map<string, string> delta_obligations = 1;
+}
+message Transaction {
+    string entity = 1;
+    DeltaState delta = 2;
+}
+
+message TransactionRequest {
+    string market_id = 1;
+    Transaction transaction = 2;
+}
+
+message TransactionResponse {
+    map<string, string> errors = 1;
+    State new_state = 2;
+}
