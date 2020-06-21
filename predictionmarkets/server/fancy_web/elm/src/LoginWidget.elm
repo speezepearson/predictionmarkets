@@ -12,14 +12,16 @@ import Endpoints
 
 type alias Username = String
 type alias Password = String
-type alias EntityId = String
+type alias Token = String
+
+type alias Whoami = {username:Username, token:Token}
 
 type alias Flags =
-    { entityId : Maybe EntityId
+    { whoami : Maybe Whoami
     }
 
 type alias Model =
-    { entityId : Maybe EntityId
+    { whoami : Maybe Whoami
     , pendingRequest : Bool
     , usernameField : Username
     , passwordField : Password
@@ -29,13 +31,13 @@ type alias Model =
 type Msg
     = SendLoginRequest
     | SendLogoutRequest
-    | LoginRequestCompleted (Result Http.Error {entityId : EntityId})
+    | LoginRequestCompleted (Result Http.Error Whoami)
     | LogoutRequestCompleted (Result Http.Error {})
     | SetUsername Username
     | SetPassword Password
     | Ignore
 
-port loggedIn : EntityId -> Cmd msg
+port loggedIn : Whoami -> Cmd msg
 port loggedOut : () -> Cmd msg
 
 main =
@@ -48,7 +50,7 @@ main =
 
 init : Flags -> ( Model , Cmd Msg )
 init flags =
-    ( { entityId = flags.entityId
+    ( { whoami = flags.whoami
       , pendingRequest = False
       , usernameField = ""
       , passwordField = ""
@@ -69,8 +71,14 @@ update msg model =
                 , Cmd.none
                 )
             else
+                let
+                    username = model.usernameField
+                    password = model.passwordField
+                in
                 ( { model | pendingRequest=True, error=Nothing }
-                , Endpoints.usernameLogIn LoginRequestCompleted {username=model.usernameField, password=model.passwordField}
+                , Endpoints.usernameLogIn
+                    (LoginRequestCompleted << Result.map (\{token} -> {token=token, username=username}))
+                    {username=username, password=password}
                 )
         SendLogoutRequest ->
             if model.pendingRequest then
@@ -78,24 +86,30 @@ update msg model =
                 , Cmd.none
                 )
             else
-                ( { model | pendingRequest=True, error=Nothing }
-                , Endpoints.logOut LogoutRequestCompleted {}
-                )
+                case model.whoami of
+                    Nothing ->
+                        ( Debug.log "ignoring logout request" model
+                        , Cmd.none
+                        )
+                    Just whoami ->
+                        ( { model | pendingRequest=True, error=Nothing }
+                        , Endpoints.logOut LogoutRequestCompleted {token=whoami.token}
+                        )
         LoginRequestCompleted (Err e) ->
             ( {model | pendingRequest=False, error=Just (Debug.toString e)}
             , Cmd.none
             )
             |> Debug.log (Debug.toString e)
 
-        LoginRequestCompleted (Ok {entityId}) ->
+        LoginRequestCompleted (Ok whoami) ->
             ( { model
-              | entityId = Just entityId
+              | whoami = Just whoami
               , pendingRequest = False
               , error = Nothing
               , usernameField = ""
               , passwordField = ""
               }
-            , loggedIn entityId
+            , loggedIn whoami
             )
         LogoutRequestCompleted result ->
             case result of
@@ -104,13 +118,13 @@ update msg model =
                     , Cmd.none
                     )
                 Ok {} ->
-                    ( { model | entityId=Nothing, pendingRequest=False, error=Nothing }
+                    ( { model | whoami=Nothing, pendingRequest=False, error=Nothing }
                     , loggedOut ()
                     )
 
 view : Model -> Html Msg
 view model =
-    case model.entityId of
+    case model.whoami of
         Nothing ->
             div []
                 [ input
@@ -141,17 +155,12 @@ view model =
                     Just errText -> div [] [span [style "color" "red"] [text errText]]
                     Nothing -> text ""
                 ]
-        Just entityId ->
+        Just whoami ->
             div []
-                [ text "Logged in as "
-                , viewEntity entityId
+                [ text ("Logged in as " ++ whoami.username)
                 , text " "
                 , button [onClick SendLogoutRequest] [text "Log out"]
                 ]
-
-viewEntity : EntityId -> Html Msg
-viewEntity entityId =
-    a [href ("/entityId/" ++ entityId)] [text entityId]
 
 onEnter : Msg -> Attribute Msg
 onEnter msg =

@@ -1,14 +1,10 @@
+import aiohttp_session
 from pathlib import Path
 
 from aiohttp import web
 
-from ... import api
+from ...api import auth
 from ...api.protobuf.predictionmarkets import auth_pb2
-
-user_passwords = {
-    "alice": "a",
-    "bob": "b",
-}
 
 routes = web.RouteTableDef()
 
@@ -24,11 +20,11 @@ def raise_(e):
     raise e
 
 if __name__ == '__main__':
-    app = web.Application()
+    authenticator = auth.Authenticator()
+    app = web.Application(middlewares=[
+        aiohttp_session.session_middleware(aiohttp_session.SimpleCookieStorage()),
+        authenticator.middleware,
+    ])
     app.add_routes(routes)
-    app.add_routes(api.make_routes(
-        list_markets_func=None,
-        username_log_in_func=(lambda username, password: username if password == user_passwords.get(username) else raise_(web.HTTPUnauthorized())),
-        log_out_func=None,
-    ))
+    app.add_routes(auth.make_routes(authenticator))
     web.run_app(app, host='localhost', port=8080)

@@ -8,10 +8,11 @@ message UsernameLogInRequest {
 }
 
 message UsernameLogInResponse {
-    string entity_id = 1;
+    string token = 1;
 }
 
 message LogOutRequest {
+    string token = 1;
 }
 
 message LogOutResponse {
