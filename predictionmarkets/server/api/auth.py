@@ -29,7 +29,7 @@ class Authenticator:
             self.session.get()['auth_token'] = token
             return token
         else:
-            raise web.HTTPUnauthorized()
+            raise web.HTTPForbidden()
 
     def log_out(self) -> None:
         response = web.Response(status=200)

@@ -10,7 +10,7 @@ routes = web.RouteTableDef()
 
 @routes.get('/')
 async def index(req):
-    return web.FileResponse(Path(__file__).parent/'login_widget.html')
+    return web.FileResponse(Path(__file__).parent/'LoginWidget.html')
 
 @routes.get('/static/LoginWidget.js')
 async def index(req):

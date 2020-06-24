@@ -23,8 +23,7 @@ type alias Model =
     }
 
 type Msg
-    = LoadMoreRequested
-    | LoadCompleted (Result Http.Error Marketplace.ListMarketsResponse)
+    = LoadCompleted (Result Http.Error Marketplace.ListMarketsResponse)
     | Ignore
 
 main = Browser.element
@@ -39,14 +38,13 @@ init () =
     ( { markets = OrderedDict.empty
       , isLoading = True
       }
-    , Endpoints.listMarkets LoadCompleted {limit=10, offset=0}
+    , Endpoints.listMarkets LoadCompleted {}
     )
 
 view : Model -> Html Msg
 view model =
     div []
         [ model.markets |> OrderedDict.toList |> List.map (\(id, m) -> li [] [viewMarket id m]) |> ul []
-        , button [onClick LoadMoreRequested , disabled model.isLoading] [text "Load more"]
         ]
 
 viewMarket : MarketId -> Market -> Html Msg
@@ -73,11 +71,6 @@ onlyJusts mxs =
 update : Msg -> Model -> ( Model , Cmd Msg )
 update msg model =
     case msg of
-
-        LoadMoreRequested ->
-            ( {model | isLoading = True}
-            , Endpoints.listMarkets LoadCompleted {limit=10, offset=(OrderedDict.size model.markets)}
-            )
 
         LoadCompleted (Ok response) ->
             ( { model

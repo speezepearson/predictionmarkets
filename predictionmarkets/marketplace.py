@@ -11,7 +11,7 @@ MarketId = t.NewType("MarketId", str)
 class Marketplace:
     def __init__(self, rng: t.Optional[random.Random] = None) -> None:
         self.insec_rng = rng if (rng is not None) else random.Random()
-        self.markets: t.Dict[MarketId, CfarMarket] = {}
+        self.markets: t.MutableMapping[MarketId, CfarMarket] = {}
 
     def get_public_markets(self) -> t.Mapping[MarketId, CfarMarket]:
         return self.markets

@@ -25,20 +25,4 @@ def make_routes(
             for id, market in marketplace.get_public_markets().items()
         })
 
-    @routes.post('/api/v1/username_log_in')
-    @pb_decorator.protobuf(auth_pb2.UsernameLogInRequest, auth_pb2.UsernameLogInResponse)
-    async def username_log_in(
-        request: web.BaseRequest,
-        request_pb: auth_pb2.UsernameLogInRequest
-    ) -> auth_pb2.UsernameLogInResponse:
-        return auth_pb2.UsernameLogInResponse(entity_id=username_log_in_func(username=request_pb.username, password=request_pb.password))
-
-    @routes.post('/api/v1/log_out')
-    @pb_decorator.protobuf(auth_pb2.LogOutRequest, auth_pb2.LogOutResponse)
-    async def log_out(
-        request: web.BaseRequest,
-        request_pb: auth_pb2.LogOutRequest
-    ) -> auth_pb2.LogOutResponse:
-        return auth_pb2.LogOutResponse()
-
     return routes
